@@ -8,17 +8,6 @@ from scipy.io.wavfile import read
 from .plot import fourier_plot, song_plot
 
 
-def removing_spaces(source_folder):
-    for song in os.listdir(source_folder):
-        sep = ' ' if ' ' in song else '_'
-        new_song = [string for string in song.split(sep)
-                    if string != '-' and not string.isdigit()]
-        new_song = '_'.join(new_song)
-        file = os.path.join(source_folder, song)
-        new_file = os.path.join(source_folder, new_song)
-        os.rename(file, new_file)
-
-
 def mp3_to_wav(mp3_file, wav_file, encoder='mpg123'):
     """
     Transform mp3 file into wav format calling bash and using mpg123

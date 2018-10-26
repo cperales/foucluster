@@ -15,6 +15,7 @@ script:
 branches:
   only:
     - master
+    - dev
 notifications:
   email: false
 after_sucess:
