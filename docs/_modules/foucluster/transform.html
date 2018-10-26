@@ -390,8 +390,6 @@
     <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">image_folder</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Encoder:&#39;</span><span class="p">,</span> <span class="n">encoder</span><span class="p">)</span>
-
     <span class="k">if</span> <span class="n">multiprocess</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
         <span class="n">songs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">song</span><span class="p">,</span> <span class="n">source_folder</span><span class="p">,</span> <span class="n">temp_folder</span><span class="p">,</span> <span class="n">output_folder</span><span class="p">,</span> <span class="n">rate_limit</span><span class="p">,</span>
                   <span class="n">overwrite</span><span class="p">,</span> <span class="n">plot</span><span class="p">,</span> <span class="n">image_folder</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>

@@ -6,6 +6,13 @@
 Welcome to FouCluster's documentation!
 ======================================
 
+.. image:: https://travis-ci.org/cperales/foucluster.svg?branch=master
+   :target: https://travis-ci.org/cperales/foucluster
+
+.. image:: https://coveralls.io/repos/github/cperales/foucluster/badge.svg?branch=master
+   :target: https://coveralls.io/github/cperales/foucluster?branch=master
+
+
 Motivation
 -----------
 Recommendation song systems nowadays, like Spotify,
