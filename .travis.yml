@@ -8,6 +8,7 @@ install:
   - python setup.py install
   - wget https://www.dropbox.com/s/sidecqpk6dhgsdq/song.zip
   - unzip song.zip
+  - sudo apt-get install mpg123 -y
 script:
   - travis_wait 60 coverage run --source=foucluster --omit=env example.py
   - coveralls
