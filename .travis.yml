@@ -1,5 +1,7 @@
 language: python
 python:
+  - 3.4
+  - 3.5
   - 3.6
 git:
   depth: false
@@ -10,7 +12,7 @@ install:
   - unzip song.zip
   - sudo apt-get install mpg123 -y
 script:
-  - travis_wait 60 coverage run --source=foucluster --omit=env example.py
+  - coverage run --source=foucluster --omit=env test.py
   - coveralls
 branches:
   only:
