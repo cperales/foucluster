@@ -82,7 +82,7 @@ def group_by_freq(freq, features, step=1.0):
         mask_1 = freq >= freq_i
         mask_2 = freq < freq_i + step
         mask = mask_1 * mask_2
-        new_freq[i] =  np.mean(freq[mask])
+        new_freq[i] = np.mean(freq[mask])
         new_features[i] = np.mean(features[mask])
         i += 1
     new_freq = np.array(new_freq, dtype=np.float)
@@ -168,7 +168,10 @@ def time_to_frequency(song,
         # Fourier transformation
         try:
             if not os.path.isfile(wav_file) or overwrite is True:
-                mp3_to_wav(mp3_file=mp3_file, wav_file=wav_file, encoder=encoder)
+                mp3_to_wav(
+                    mp3_file=mp3_file,
+                    wav_file=wav_file,
+                    encoder=encoder)
 
             frequencies, fourier_series = wav_to_fourier(wav_file=wav_file,
                                                          rate_limit=rate_limit,
