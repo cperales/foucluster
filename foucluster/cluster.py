@@ -76,7 +76,7 @@ def jump_method(dist_df, n_max=50):
     :param int n_max: maximum number of clusters to test.
     :return: optimal number of clusters
     """
-    dim = len(dist_df.index)
+    dim = dist_df.shape[0]
     if n_max > dim:
         n_max = dim
     Y = dim / 2
