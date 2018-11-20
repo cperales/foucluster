@@ -1,5 +1,4 @@
-from sklearn.cluster import AgglomerativeClustering, SpectralClustering, KMeans
-from sklearn.cluster import AffinityPropagation, MeanShift
+from sklearn import cluster
 from sklearn.preprocessing import minmax_scale
 from scipy.spatial.distance import cdist
 import pandas as pd
@@ -7,12 +6,12 @@ import numpy as np
 
 eps = 10**(-10)
 
-n_cluster_methods = {'AgglomerativeClustering': AgglomerativeClustering,
-                     'SpectralClustering': SpectralClustering,
-                     'KMeans': KMeans}
+n_cluster_methods = {'cluster.AgglomerativeClustering': cluster.AgglomerativeClustering,
+                     'cluster.SpectralClustering': cluster.SpectralClustering,
+                     'cluster.KMeans': cluster.KMeans}
 
-non_n_cluster_methods = {'AffinityPropagation': AffinityPropagation,
-                         'MeanShift': MeanShift}
+non_n_cluster_methods = {'cluster.AffinityPropagation': cluster.AffinityPropagation,
+                         'cluster.MeanShift': cluster.MeanShift}
 
 
 cluster_methods = n_cluster_methods.copy()
@@ -27,9 +26,9 @@ def determinist_cluster(dist_df, method, n_clusters):
     :param pandas.DataFrame dist_df:
     :param str method: name of the sklearn.cluster.
 
-            - AgglomerativeClustering.
-            - SpectralClustering.
-            - KMeans.
+            - cluster.AgglomerativeClustering.
+            - cluster.SpectralClustering.
+            - cluster.KMeans.
 
     :param int n_clusters:
     :return: pandas.DataFrame with a column with clusters.
@@ -47,11 +46,11 @@ def automatic_cluster(dist_df, method):
     :param pd.DataFrame dist_df:
     :param str method: name of the sklearn.cluster.
 
-            - AffinityPropagation.
-            - MeanShift.
-            - AgglomerativeClustering.
-            - SpectralClustering.
-            - KMeans.
+            - cluster.AffinityPropagation.
+            - cluster.MeanShift.
+            - cluster.AgglomerativeClustering.
+            - cluster.SpectralClustering.
+            - cluster.KMeans.
 
     :return: pandas.DataFrame with a column with clusters.
     """
@@ -84,7 +83,7 @@ def jump_method(dist_df, n_max=50):
     jump_vector = np.empty(n_max)
     distortions[0] = 0.0
     for k in range(1, n_max + 1):
-        kmean_model = KMeans(n_clusters=k).fit(dist_df)
+        kmean_model = cluster.KMeans(n_clusters=k).fit(dist_df)
         distortion = np.min(cdist(dist_df,
                                   kmean_model.cluster_centers_,
                                   'euclidean').ravel()) / dim + eps

@@ -12,7 +12,7 @@ install:
   - sudo apt-get install mpg123 -y
 script:
   - coverage run --source=foucluster --omit=env example.py
-  - coverage run --source=foucluster --omit=env tests/test_cluster.py
+  - python tests/test_cluster.py
   - coveralls
 branches:
   only:
