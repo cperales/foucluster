@@ -11,7 +11,7 @@ install:
   - unzip song.zip
   - sudo apt-get install mpg123 -y
 script:
-  - coverage run --source=foucluster --omit=env example.py
+  - coverage run --source=foucluster --omit=env coverage_test.py
   - python tests/test_cluster.py
   - coveralls
 branches:
