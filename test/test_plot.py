@@ -6,6 +6,7 @@ import os
 import json
 import matplotlib.pyplot as plt
 from scipy.io.wavfile import read
+import numpy as np
 
 
 class TestPlot(unittest.TestCase):
@@ -34,11 +35,10 @@ class TestPlot(unittest.TestCase):
         """
         config = configparser.ConfigParser()
         config.read('config.ini')
-        song_folder = config['Folder']['Output']
-        first_song = os.path.join(song_folder,
-                                  os.listdir(song_folder)[i])
-        rate, aud_data = read(os.path.join(first_song,
-                                           song_folder))
+        song_folder = config['Folder']['Temp']
+        first_song = os.listdir(song_folder)[i]
+        rate, aud_data = read(os.path.join(song_folder,
+                                           first_song))
         # Should be mono
         if len(aud_data) != len(aud_data.ravel()):
             aud_data = np.mean(aud_data, axis=1)
@@ -59,8 +59,10 @@ class TestPlot(unittest.TestCase):
         :return:
         """
         aud_data = self._get_song()
-        song_plot(aud_data, 'random')
-        os.remove('random_song.png')
+        song_plot(aud_data,
+                  folder=None,
+                  filename='random')
+        os.remove('random.png')
 
 
 if __name__ == '__main__':

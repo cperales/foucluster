@@ -2,7 +2,6 @@ import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.io.wavfile import read
 
 
 def heatmap_song(song_df,
@@ -46,7 +45,7 @@ def fourier_plot(freq, features,
 
 
 def song_plot(aud_data,
-              folder_image=None,
+              folder=None,
               filename=None):
     fig = plt.figure(1)
     # Turn interactive plotting off
@@ -57,8 +56,9 @@ def song_plot(aud_data,
     plt.xticks([])
     plt.yticks([])
     if filename is not None:
-        f = folder_image if folder_image is None else ''
-        plt.savefig(os.path.join(f, filename + '_song.png'))
+        f = '' if folder is None else folder
+        plt.savefig(os.path.join(f,
+                                 filename + '.png'))
     plt.close(fig)
 
 
