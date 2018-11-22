@@ -36,7 +36,10 @@ fourier_series_json/
 more_songs/
 
 # Developper test
-test.py
+.coverage
+.cache/
+image/
+*.zip
 
 # Output files
 *.json

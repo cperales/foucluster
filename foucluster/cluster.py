@@ -139,4 +139,4 @@ def party_list(cluster_df, song=None):
     """
     if song is None or song not in cluster_df.columns:
         song = cluster_df.index[0]
-    print(cluster_df.sort_values(song)[song])
+    return cluster_df.sort_values(song)[song]
