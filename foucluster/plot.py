@@ -6,6 +6,14 @@ import matplotlib.pyplot as plt
 def heatmap_song(song_df,
                  image_name,
                  image_folder=None):
+    """
+    Plot heatmap of a distance dataframe.
+
+    :param song_df:
+    :param image_name:
+    :param image_folder:
+    :return:
+    """
     fig, ax = plt.subplots()
     sns.heatmap(song_df)
     fig.subplots_adjust(left=0.35,
@@ -20,6 +28,7 @@ def fourier_plot(freq, features,
                  folder=None,
                  filename=None):
     """
+    
     """
     fig = plt.figure(1)
     # Turn interactive plotting off
@@ -27,10 +36,9 @@ def fourier_plot(freq, features,
     plt.plot(freq, features)
     plt.xlabel('frequency')
     plt.ylabel('amplitude')
-    if folder is None:
-        folder = ''
     if filename is not None:
-        plt.savefig(os.path.join(folder,
+        f = '' if folder is None else folder
+        plt.savefig(os.path.join(f,
                                  filename + '.png'))
     plt.close(fig)
 
@@ -56,6 +64,20 @@ def song_plot(features,
     plt.close(fig)
 
 
-def diff_plot(x, y1, y2):
-    fig, ax1 = plt.subplots()
-    ax1.fill_between(x, y1, y2)
+def diff_plot(song_1, song_2):
+    """
+    Plot the difference between two series.
+
+    :param dict song_1:
+    :param dict song_2:
+    :return:
+    """
+    fig, ax_1 = plt.subplots()
+    x_1 = list(song_1.keys())
+    y_1 = list(song_1.values())
+    x_2 = list(song_2.keys())
+    y_2 = list(song_2.values())
+    y_2_interp = np.interp(x_1,
+                           y_1,
+                           y_2_interp)
+    ax1.fill_between(x, y_1, y_2_interp)
