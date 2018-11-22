@@ -22,7 +22,8 @@ class TestPlot(unittest.TestCase):
                                   os.listdir(fourier_folder)[i])
         with open(first_file, 'r') as b:
             j = json.load(b)
-        return j
+        song = j[list(j.keys())[0]]
+        return song
 
     def test_diff(self):
         """

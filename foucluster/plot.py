@@ -1,6 +1,7 @@
 import os
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def heatmap_song(song_df,
@@ -70,12 +71,12 @@ def diff_plot(song_1, song_2):
     :param dict song_2:
     :return:
     """
-    fig, ax_1 = plt.subplots()
     x_1 = list(song_1.keys())
     y_1 = list(song_1.values())
     x_2 = list(song_2.keys())
     y_2 = list(song_2.values())
     y_2_interp = np.interp(x_1,
-                           y_1,
-                           y_2_interp)
-    ax1.fill_between(x, y_1, y_2_interp)
+                           x_2,
+                           y_2)
+    fig, ax_1 = plt.subplots()
+    ax_1.fill_between(x_1, y_1, y_2_interp)
