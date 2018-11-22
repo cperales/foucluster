@@ -5,8 +5,8 @@
 
 *This project was presented at [PyCon ES 2018](https://2018.es.pycon.org/).
 PDF presentation can be found in spanish
-[here](https://es.slideshare.net/CarlosPerales/clustering-de-canciones-usando-fourier)*
-Video of the presentation in spanish can be found in [Youtube](https://www.youtube.com/watch?v=a9AJSfIEbo0)
+[here](https://es.slideshare.net/CarlosPerales/clustering-de-canciones-usando-fourier)
+Video of the presentation in spanish can be found in [Youtube](https://www.youtube.com/watch?v=a9AJSfIEbo0)*
 
 ## Installation and use
 
@@ -45,4 +45,3 @@ can be applied.
 Because [musical notes have associated frequencies](https://www.intmath.com/trigonometric-graphs/music.php),
 this proposal is based on transforming from time series to frequency series, and then grouping theses series
 using various techniques and distance metrics.
-

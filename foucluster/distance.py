@@ -74,7 +74,7 @@ def warp_distance(distance_metric, x, y, warp=200):
     y_copy = deepcopy(y)
     # Starting the warping
     min_diff = distance_func(x, y)
-    for i in range(1, warp):
+    for i in range(1, int(warp)):
         # Moving forward
         forward_diff = distance_func(x_copy[i:], y_copy[:-i])
         if forward_diff < min_diff:
