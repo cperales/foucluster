@@ -128,15 +128,15 @@ def score_cluster(cluster_df):
     return np.average(score_vector)
 
 
-def party_list(cluster_df, song=None):
+def party_list(song_df, song=None):
     """
     A list of song of all the songs from the cluster dataframe
     sorted, from similarity between them.
 
-    :param pandas.DataFrame cluster_df:
+    :param pandas.DataFrame song_df:
     :param str song:
     :return:
     """
-    if song is None or song not in cluster_df.columns:
-        song = cluster_df.index[0]
-    return cluster_df.sort_values(song)[song]
+    if song is None or song not in song_df.columns:
+        song = song_df.index[0]
+    return song_df.sort_values(song)[song]

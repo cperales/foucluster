@@ -55,7 +55,7 @@ class TestCluster(unittest.TestCase):
                                   sep=';')
         song_df = song_df.set_index('Songs')
         first_song = song_df.index[0]
-        song_list = party_list(song_df, song=first_song)
+        song_list = party_list(song_df)
         order = True
         distance = 0.0
         for song in song_list.index:
