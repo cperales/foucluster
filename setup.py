@@ -2,8 +2,8 @@ from setuptools import setup
 
 setup(
     name="foucluster",
-    description="FouCluster",
-    version="1.1",
+    description="Clustering of songs using Fourier",
+    version="1.2",
     author="Carlos Perales",
     author_email="sir.perales@gmail.com",
     packages=['foucluster'
