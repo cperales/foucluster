@@ -58,6 +58,9 @@ class TestPlot(unittest.TestCase):
 
         :return:
         """
+        aud_data = self._get_song()
+        song_plot(aud_data, 'random')
+        os.remove('random_song.png')
 
 
 if __name__ == '__main__':
