@@ -56,11 +56,9 @@ def song_plot(features,
     plt.ylabel('amplitude')
     plt.xticks([])
     plt.yticks([])
-    if folder is None:
-        folder = ''
     if filename is not None:
-        plt.savefig(os.path.join(folder,
-                                 filename + '_song.png'))
+        f = folder if folder is None else ''
+        plt.savefig(os.path.join(f, filename + '_song.png'))
     plt.close(fig)
 
 
