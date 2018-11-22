@@ -5,6 +5,7 @@ import os
 from foucluster.distance import distance_dict
 import numpy as np
 import unittest
+import warnings
 
 
 class TestCluster(unittest.TestCase):
@@ -17,6 +18,7 @@ class TestCluster(unittest.TestCase):
 
         :return:
         """
+        warnings.simplefilter("ignore")
         metrics = distance_dict.keys()
         config = configparser.ConfigParser()
         config.read('config.ini')
@@ -41,6 +43,7 @@ class TestCluster(unittest.TestCase):
 
         :return:
         """
+        warnings.simplefilter("ignore")
         config = configparser.ConfigParser()
         config.read('config.ini')
 
@@ -68,5 +71,5 @@ class TestCluster(unittest.TestCase):
         self.assertTrue(order)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
