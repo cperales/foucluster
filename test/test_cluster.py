@@ -19,22 +19,20 @@ class TestCluster(unittest.TestCase):
         :return:
         """
         warnings.simplefilter("ignore")
-        metrics = distance_dict.keys()
         config = configparser.ConfigParser()
         config.read('config.ini')
 
         # Folder
         distance_folder = config['Folder']['Distance']
-
-        for metric in metrics:
-            song_df = pd.read_csv(os.path.join(distance_folder,
-                                               metric + '.csv'),
-                                  sep=';')
-            song_df = song_df.set_index('Songs')
-            for cluster_method in cluster_methods:
-                cluster_df = automatic_cluster(dist_df=song_df.copy(deep=True),
-                                               method=cluster_method)
-                self.assertGreater(np.unique(cluster_df['Cluster'].values).shape[0], 1)
+        metric = 'l2_norm'
+        song_df = pd.read_csv(os.path.join(distance_folder,
+                                           metric + '.csv'),
+                              sep=';')
+        song_df = song_df.set_index('Songs')
+        for cluster_method in cluster_methods:
+            cluster_df = automatic_cluster(dist_df=song_df.copy(deep=True),
+                                           method=cluster_method)
+            self.assertGreater(np.unique(cluster_df['Cluster'].values).shape[0], 1)
 
 
     def test_party_list(self):

@@ -12,7 +12,7 @@ import warnings
 
 class TestFullExample(unittest.TestCase):
 
-    def test__example(self):
+    def test_example(self):
         warnings.simplefilter("ignore")
         config = configparser.ConfigParser()
         config.read('config.ini')
@@ -44,7 +44,7 @@ class TestFullExample(unittest.TestCase):
                   output_folder=output_folder,
                   temp_folder=temp_folder,
                   rate_limit=rate_limit,
-                  overwrite=False,
+                  overwrite=True,
                   plot=True,
                   image_folder=image_folder,
                   multiprocess=mp,
