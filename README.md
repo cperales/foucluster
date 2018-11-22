@@ -3,9 +3,10 @@
 [![Build Status](https://travis-ci.org/cperales/foucluster.svg?branch=master)](https://travis-ci.org/cperales/foucluster)
 [![Coverage Status](https://coveralls.io/repos/github/cperales/foucluster/badge.svg?branch=master)](https://coveralls.io/github/cperales/foucluster?branch=master)
 
-*This project will be presented at [PyCon ES 2018](https://2018.es.pycon.org/).
+*This project was presented at [PyCon ES 2018](https://2018.es.pycon.org/).
 PDF presentation can be found in spanish
 [here](https://es.slideshare.net/CarlosPerales/clustering-de-canciones-usando-fourier)*
+Video of the presentation in spanish can be found in [Youtube](https://www.youtube.com/watch?v=a9AJSfIEbo0)
 
 ## Installation and use
 
