@@ -1,0 +1,345 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>foucluster.cluster &mdash; FouCluster 1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> FouCluster
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../transform.html">Transform audio into fourier series</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../distance.html">Pair distances among Fourier series</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cluster.html">Cluster of songs using distances</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../example.html">Example with plotting</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">FouCluster</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>foucluster.cluster</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for foucluster.cluster</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="k">import</span> <span class="n">AgglomerativeClustering</span><span class="p">,</span> <span class="n">SpectralClustering</span><span class="p">,</span> <span class="n">KMeans</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="k">import</span> <span class="n">AffinityPropagation</span><span class="p">,</span> <span class="n">MeanShift</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">minmax_scale</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="k">import</span> <span class="n">cdist</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">eps</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">n_cluster_methods</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;AgglomerativeClustering&#39;</span><span class="p">:</span> <span class="n">AgglomerativeClustering</span><span class="p">,</span>
+                     <span class="s1">&#39;SpectralClustering&#39;</span><span class="p">:</span> <span class="n">SpectralClustering</span><span class="p">,</span>
+                     <span class="s1">&#39;KMeans&#39;</span><span class="p">:</span> <span class="n">KMeans</span><span class="p">}</span>
+
+<span class="n">non_n_cluster_methods</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;AffinityPropagation&#39;</span><span class="p">:</span> <span class="n">AffinityPropagation</span><span class="p">,</span>
+                         <span class="s1">&#39;MeanShift&#39;</span><span class="p">:</span> <span class="n">MeanShift</span><span class="p">}</span>
+
+
+<span class="n">cluster_methods</span> <span class="o">=</span> <span class="n">n_cluster_methods</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">cluster_methods</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">non_n_cluster_methods</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="determinist_cluster"><a class="viewcode-back" href="../../cluster.html#foucluster.cluster.determinist_cluster">[docs]</a><span class="k">def</span> <span class="nf">determinist_cluster</span><span class="p">(</span><span class="n">dist_df</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">n_clusters</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clustering of the songs from the dataframe, indicating</span>
+<span class="sd">    the number of clusters to use.</span>
+
+<span class="sd">    :param pandas.DataFrame dist_df:</span>
+<span class="sd">    :param str method: name of the sklearn.cluster.</span>
+
+<span class="sd">            - AgglomerativeClustering.</span>
+<span class="sd">            - SpectralClustering.</span>
+<span class="sd">            - KMeans.</span>
+
+<span class="sd">    :param int n_clusters:</span>
+<span class="sd">    :return: pandas.DataFrame with a column with clusters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df_matrix</span> <span class="o">=</span> <span class="n">minmax_scale</span><span class="p">(</span><span class="n">dist_df</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">n_cluster_methods</span><span class="p">[</span><span class="n">method</span><span class="p">](</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">n_clusters</span><span class="p">)</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">df_matrix</span><span class="p">)</span>
+    <span class="n">cluster_df</span> <span class="o">=</span> <span class="n">dist_df</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">cluster_df</span><span class="p">[</span><span class="s1">&#39;Cluster&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">cluster_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cluster_df</span></div>
+
+
+<div class="viewcode-block" id="automatic_cluster"><a class="viewcode-back" href="../../cluster.html#foucluster.cluster.automatic_cluster">[docs]</a><span class="k">def</span> <span class="nf">automatic_cluster</span><span class="p">(</span><span class="n">dist_df</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    :param pd.DataFrame dist_df:</span>
+<span class="sd">    :param str method: name of the sklearn.cluster.</span>
+
+<span class="sd">            - AffinityPropagation.</span>
+<span class="sd">            - MeanShift.</span>
+<span class="sd">            - AgglomerativeClustering.</span>
+<span class="sd">            - SpectralClustering.</span>
+<span class="sd">            - KMeans.</span>
+
+<span class="sd">    :return: pandas.DataFrame with a column with clusters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df_matrix</span> <span class="o">=</span> <span class="n">minmax_scale</span><span class="p">(</span><span class="n">dist_df</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">n_cluster_methods</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">n_clusters</span> <span class="o">=</span> <span class="n">jump_method</span><span class="p">(</span><span class="n">dist_df</span><span class="o">=</span><span class="n">df_matrix</span><span class="p">)</span>
+        <span class="n">clf</span> <span class="o">=</span> <span class="n">n_cluster_methods</span><span class="p">[</span><span class="n">method</span><span class="p">](</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">n_clusters</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">clf</span> <span class="o">=</span> <span class="n">non_n_cluster_methods</span><span class="p">[</span><span class="n">method</span><span class="p">]()</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">df_matrix</span><span class="p">)</span>
+    <span class="n">cluster_df</span> <span class="o">=</span> <span class="n">dist_df</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">cluster_df</span><span class="p">[</span><span class="s1">&#39;Cluster&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">cluster_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cluster_df</span></div>
+
+
+<div class="viewcode-block" id="jump_method"><a class="viewcode-back" href="../../cluster.html#foucluster.cluster.jump_method">[docs]</a><span class="k">def</span> <span class="nf">jump_method</span><span class="p">(</span><span class="n">dist_df</span><span class="p">,</span> <span class="n">n_max</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method based on information theory to determine best</span>
+<span class="sd">    number of clusters.</span>
+
+<span class="sd">    :param pandas.DataFrame dist_df:</span>
+<span class="sd">    :param int n_max: maximum number of clusters to test.</span>
+<span class="sd">    :return: optimal number of clusters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dist_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_max</span> <span class="o">&gt;</span> <span class="n">dim</span><span class="p">:</span>
+        <span class="n">n_max</span> <span class="o">=</span> <span class="n">dim</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">distortions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">jump_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_max</span><span class="p">)</span>
+    <span class="n">distortions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">kmean_model</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">dist_df</span><span class="p">)</span>
+        <span class="n">distortion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cdist</span><span class="p">(</span><span class="n">dist_df</span><span class="p">,</span>
+                                  <span class="n">kmean_model</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="p">,</span>
+                                  <span class="s1">&#39;euclidean&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span> <span class="o">/</span> <span class="n">dim</span> <span class="o">+</span> <span class="n">eps</span>
+        <span class="n">distortions</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">distortion</span><span class="o">**</span><span class="p">(</span><span class="o">-</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="n">jump_vector</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">distortions</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">distortions</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">n_cluster</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">jump_vector</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">n_cluster</span></div>
+
+
+<span class="k">def</span> <span class="nf">score_cluster</span><span class="p">(</span><span class="n">cluster_df</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    When `automatic_cluster` is used, then the clusters must be</span>
+<span class="sd">    grouped into the categories we want into predict, in order to score</span>
+<span class="sd">    our method.</span>
+
+<span class="sd">    :param pandas.DataFrame cluster_df:</span>
+<span class="sd">    :return: accuracy score. cluster_df have now `Cluster_corrected` column.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">accurate_class</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">cluster_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
+    <span class="n">accurate_class</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">accurate_class</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Move to 0, 1, ... notation</span>
+    <span class="n">accurate_class</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">accurate_class</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">cluster_class</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cluster_df</span><span class="p">[</span><span class="s1">&#39;Cluster&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="c1"># Find correspondences between given classes and cluster classes</span>
+    <span class="n">correspondence_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">cluster_class</span><span class="p">):</span>
+        <span class="n">max_c</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">pos_p</span> <span class="o">=</span> <span class="n">cluster_class</span> <span class="o">==</span> <span class="n">p</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">accurate_class</span><span class="p">):</span>
+            <span class="n">pos_e</span> <span class="o">=</span> <span class="n">accurate_class</span> <span class="o">==</span> <span class="n">e</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="p">(</span><span class="n">pos_p</span> <span class="o">==</span> <span class="n">pos_e</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="n">max_c</span><span class="p">:</span>
+                <span class="n">correspondence_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">p</span><span class="p">:</span> <span class="n">e</span><span class="p">})</span>
+                <span class="n">max_c</span> <span class="o">=</span> <span class="n">c</span>
+    <span class="c1"># Finding the accuracy</span>
+    <span class="n">cluster_class_corrected</span> <span class="o">=</span> <span class="p">[</span><span class="n">correspondence_dict</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">cluster_class</span><span class="p">]</span>
+    <span class="n">cluster_df</span><span class="p">[</span><span class="s1">&#39;Cluster_corrected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">cluster_class_corrected</span><span class="p">,</span>
+                                                <span class="n">index</span><span class="o">=</span><span class="n">cluster_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">score_vector</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="o">==</span> <span class="n">p_c</span> <span class="k">for</span> <span class="n">e</span><span class="p">,</span> <span class="n">p_c</span> <span class="ow">in</span>
+                    <span class="nb">zip</span><span class="p">(</span><span class="n">accurate_class</span><span class="p">,</span> <span class="n">cluster_class_corrected</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">score_vector</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">party_list</span><span class="p">(</span><span class="n">cluster_df</span><span class="p">,</span> <span class="n">song</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A list of song of all the songs from the cluster dataframe</span>
+<span class="sd">    sorted, from similarity between them.</span>
+
+<span class="sd">    :param pandas.DataFrame cluster_df:</span>
+<span class="sd">    :param str song:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">song</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">song</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cluster_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">song</span> <span class="o">=</span> <span class="n">cluster_df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">cluster_df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">song</span><span class="p">)[</span><span class="n">song</span><span class="p">])</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Carlos Perales
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

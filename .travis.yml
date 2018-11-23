@@ -1,0 +1,20 @@
+language: python
+python:
+  - 3.6
+git:
+  depth: false
+install:
+  - pip install coveralls
+  - python setup.py install
+  - wget https://www.dropbox.com/s/sidecqpk6dhgsdq/song.zip
+  - unzip song.zip
+script:
+  - travis_wait 60 coverage run --source=foucluster --omit=env example.py
+  - coveralls
+branches:
+  only:
+    - master
+notifications:
+  email: false
+after_sucess:
+  - echo "Travis CI built!"
