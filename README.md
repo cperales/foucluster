@@ -24,7 +24,7 @@ Unzip the songs, so `.mp3` files can be found in `song/` folder.
 After that, just run
 
 ```bash
-python example.py
+python test/test_full.py
 ```
 
 Clustering with other songs can be done by adding them into `song/` folder.
