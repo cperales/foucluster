@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>foucluster.transform &mdash; FouCluster 1.1 documentation</title>
+  <title>foucluster.transform &mdash; FouCluster 1.2 documentation</title>
   
 
   
@@ -158,17 +158,6 @@
 <span class="kn">from</span> <span class="nn">.plot</span> <span class="k">import</span> <span class="n">fourier_plot</span><span class="p">,</span> <span class="n">song_plot</span>
 
 
-<span class="k">def</span> <span class="nf">removing_spaces</span><span class="p">(</span><span class="n">source_folder</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">song</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">source_folder</span><span class="p">):</span>
-        <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span> <span class="k">if</span> <span class="s1">&#39; &#39;</span> <span class="ow">in</span> <span class="n">song</span> <span class="k">else</span> <span class="s1">&#39;_&#39;</span>
-        <span class="n">new_song</span> <span class="o">=</span> <span class="p">[</span><span class="n">string</span> <span class="k">for</span> <span class="n">string</span> <span class="ow">in</span> <span class="n">song</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">string</span> <span class="o">!=</span> <span class="s1">&#39;-&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">string</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()]</span>
-        <span class="n">new_song</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">new_song</span><span class="p">)</span>
-        <span class="n">file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">source_folder</span><span class="p">,</span> <span class="n">song</span><span class="p">)</span>
-        <span class="n">new_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">source_folder</span><span class="p">,</span> <span class="n">new_song</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">new_file</span><span class="p">)</span>
-
-
 <div class="viewcode-block" id="mp3_to_wav"><a class="viewcode-back" href="../../transform.html#foucluster.transform.mp3_to_wav">[docs]</a><span class="k">def</span> <span class="nf">mp3_to_wav</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">,</span> <span class="n">wav_file</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="s1">&#39;mpg123&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transform mp3 file into wav format calling bash and using mpg123</span>
@@ -243,7 +232,7 @@
         <span class="n">mask_1</span> <span class="o">=</span> <span class="n">freq</span> <span class="o">&gt;=</span> <span class="n">freq_i</span>
         <span class="n">mask_2</span> <span class="o">=</span> <span class="n">freq</span> <span class="o">&lt;</span> <span class="n">freq_i</span> <span class="o">+</span> <span class="n">step</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">mask_1</span> <span class="o">*</span> <span class="n">mask_2</span>
-        <span class="n">new_freq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">freq</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+        <span class="n">new_freq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">freq</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
         <span class="n">new_features</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="n">new_freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">new_freq</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
@@ -329,7 +318,10 @@
         <span class="c1"># Fourier transformation</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">wav_file</span><span class="p">)</span> <span class="ow">or</span> <span class="n">overwrite</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="n">mp3_to_wav</span><span class="p">(</span><span class="n">mp3_file</span><span class="o">=</span><span class="n">mp3_file</span><span class="p">,</span> <span class="n">wav_file</span><span class="o">=</span><span class="n">wav_file</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="n">encoder</span><span class="p">)</span>
+                <span class="n">mp3_to_wav</span><span class="p">(</span>
+                    <span class="n">mp3_file</span><span class="o">=</span><span class="n">mp3_file</span><span class="p">,</span>
+                    <span class="n">wav_file</span><span class="o">=</span><span class="n">wav_file</span><span class="p">,</span>
+                    <span class="n">encoder</span><span class="o">=</span><span class="n">encoder</span><span class="p">)</span>
 
             <span class="n">frequencies</span><span class="p">,</span> <span class="n">fourier_series</span> <span class="o">=</span> <span class="n">wav_to_fourier</span><span class="p">(</span><span class="n">wav_file</span><span class="o">=</span><span class="n">wav_file</span><span class="p">,</span>
                                                          <span class="n">rate_limit</span><span class="o">=</span><span class="n">rate_limit</span><span class="p">,</span>
@@ -452,7 +444,6 @@
         <script type="text/javascript" src="../../_static/jquery.js"></script>
         <script type="text/javascript" src="../../_static/underscore.js"></script>
         <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

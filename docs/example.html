@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Example with plotting &mdash; FouCluster 1.1 documentation</title>
+  <title>Example with plotting &mdash; FouCluster 1.2 documentation</title>
   
 
   
@@ -152,22 +152,34 @@
             
   <div class="section" id="example-with-plotting">
 <h1>Example with plotting<a class="headerlink" href="#example-with-plotting" title="Permalink to this headline">¶</a></h1>
-<p>After running <cite>python example.py</cite>, it loads the configuration
-from <cite>config.ini</cite> and from the folder <cite>song/</cite>. After
-executing it, we can see the fourier series in the folder <cite>image/</cite>
-saved using the functions from
-<cite>foucluster.plot</cite>.</p>
+<p>When you have installed <cite>mpg123</cite> or <cite>ffmpeg</cite> for MP3 to WAV
+transform, you should download
+<a class="reference external" href="https://www.dropbox.com/s/sidecqpk6dhgsdq/song.zip">this zip</a>
+and unzip it. Then, run</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python test/test_full
+</pre></div>
+</div>
+<p>This test:</p>
+<ul class="simple">
+<li>Load the configuration from <code class="docutils literal notranslate"><span class="pre">config.ini</span></code>.</li>
+<li>Transform the songs from <cite>song/</cite> to a temporary folder.</li>
+<li>Transform each song from WAV to a Fourier series, plot and store it.</li>
+<li>Calculate the distances between songs.</li>
+<li>Cluster them.</li>
+</ul>
+<p>Examples of the Fourier series:</p>
 <p><em>Higher and Higher</em> from <em>Scream Inc</em> is a rock song.</p>
 <img alt="_images/Higher_And_Higher_rock.png" src="_images/Higher_And_Higher_rock.png" />
 <p><em>Secret mission</em> from <em>Frank Rawel</em> is a jazz song.</p>
 <img alt="_images/Secret_Mission_jazz.png" src="_images/Secret_Mission_jazz.png" />
-<p>The distance matrix can be plot as a heat map</p>
-<img alt="_images/integrate.png" src="_images/integrate.png" />
-<p>where the dark values means the songs are closer and
+<p>The distance matrix can be plot as a heat map,
+where the dark values means the songs are closer and
 white means the distances are high.</p>
-<p>Using only the deterministic cluster algorithms (the ones in which
-you need to introduce the number of clusters; we introduced 2 for
-the example),</p>
+<img alt="_images/integrate.png" src="_images/integrate.png" />
+<p>If you can read the heat map, you already can see there
+are two groups. These two groups are jazz music and
+rock music. So we can apply cluster algorithms to the
+system.</p>
 <img alt="_images/score.png" src="_images/score.png" />
 </div>
 
@@ -214,7 +226,6 @@ the example),</p>
         <script type="text/javascript" src="_static/jquery.js"></script>
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

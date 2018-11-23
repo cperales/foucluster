@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>foucluster.cluster &mdash; FouCluster 1.1 documentation</title>
+  <title>foucluster.cluster &mdash; FouCluster 1.2 documentation</title>
   
 
   
@@ -148,8 +148,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for foucluster.cluster</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="k">import</span> <span class="n">AgglomerativeClustering</span><span class="p">,</span> <span class="n">SpectralClustering</span><span class="p">,</span> <span class="n">KMeans</span>
-<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="k">import</span> <span class="n">AffinityPropagation</span><span class="p">,</span> <span class="n">MeanShift</span>
+<span></span><span class="kn">from</span> <span class="nn">sklearn</span> <span class="k">import</span> <span class="n">cluster</span>
 <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">minmax_scale</span>
 <span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="k">import</span> <span class="n">cdist</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -157,12 +156,12 @@
 
 <span class="n">eps</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span>
 
-<span class="n">n_cluster_methods</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;AgglomerativeClustering&#39;</span><span class="p">:</span> <span class="n">AgglomerativeClustering</span><span class="p">,</span>
-                     <span class="s1">&#39;SpectralClustering&#39;</span><span class="p">:</span> <span class="n">SpectralClustering</span><span class="p">,</span>
-                     <span class="s1">&#39;KMeans&#39;</span><span class="p">:</span> <span class="n">KMeans</span><span class="p">}</span>
+<span class="n">n_cluster_methods</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;cluster.AgglomerativeClustering&#39;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">AgglomerativeClustering</span><span class="p">,</span>
+                     <span class="s1">&#39;cluster.SpectralClustering&#39;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">SpectralClustering</span><span class="p">,</span>
+                     <span class="s1">&#39;cluster.KMeans&#39;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">KMeans</span><span class="p">}</span>
 
-<span class="n">non_n_cluster_methods</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;AffinityPropagation&#39;</span><span class="p">:</span> <span class="n">AffinityPropagation</span><span class="p">,</span>
-                         <span class="s1">&#39;MeanShift&#39;</span><span class="p">:</span> <span class="n">MeanShift</span><span class="p">}</span>
+<span class="n">non_n_cluster_methods</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;cluster.AffinityPropagation&#39;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">AffinityPropagation</span><span class="p">,</span>
+                         <span class="s1">&#39;cluster.MeanShift&#39;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">MeanShift</span><span class="p">}</span>
 
 
 <span class="n">cluster_methods</span> <span class="o">=</span> <span class="n">n_cluster_methods</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -177,9 +176,9 @@
 <span class="sd">    :param pandas.DataFrame dist_df:</span>
 <span class="sd">    :param str method: name of the sklearn.cluster.</span>
 
-<span class="sd">            - AgglomerativeClustering.</span>
-<span class="sd">            - SpectralClustering.</span>
-<span class="sd">            - KMeans.</span>
+<span class="sd">            - cluster.AgglomerativeClustering.</span>
+<span class="sd">            - cluster.SpectralClustering.</span>
+<span class="sd">            - cluster.KMeans.</span>
 
 <span class="sd">    :param int n_clusters:</span>
 <span class="sd">    :return: pandas.DataFrame with a column with clusters.</span>
@@ -197,11 +196,11 @@
 <span class="sd">    :param pd.DataFrame dist_df:</span>
 <span class="sd">    :param str method: name of the sklearn.cluster.</span>
 
-<span class="sd">            - AffinityPropagation.</span>
-<span class="sd">            - MeanShift.</span>
-<span class="sd">            - AgglomerativeClustering.</span>
-<span class="sd">            - SpectralClustering.</span>
-<span class="sd">            - KMeans.</span>
+<span class="sd">            - cluster.AffinityPropagation.</span>
+<span class="sd">            - cluster.MeanShift.</span>
+<span class="sd">            - cluster.AgglomerativeClustering.</span>
+<span class="sd">            - cluster.SpectralClustering.</span>
+<span class="sd">            - cluster.KMeans.</span>
 
 <span class="sd">    :return: pandas.DataFrame with a column with clusters.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -226,7 +225,7 @@
 <span class="sd">    :param int n_max: maximum number of clusters to test.</span>
 <span class="sd">    :return: optimal number of clusters</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dist_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="n">dist_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">n_max</span> <span class="o">&gt;</span> <span class="n">dim</span><span class="p">:</span>
         <span class="n">n_max</span> <span class="o">=</span> <span class="n">dim</span>
     <span class="n">Y</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">/</span> <span class="mi">2</span>
@@ -234,7 +233,7 @@
     <span class="n">jump_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_max</span><span class="p">)</span>
     <span class="n">distortions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-        <span class="n">kmean_model</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">dist_df</span><span class="p">)</span>
+        <span class="n">kmean_model</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">dist_df</span><span class="p">)</span>
         <span class="n">distortion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cdist</span><span class="p">(</span><span class="n">dist_df</span><span class="p">,</span>
                                   <span class="n">kmean_model</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="p">,</span>
                                   <span class="s1">&#39;euclidean&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span> <span class="o">/</span> <span class="n">dim</span> <span class="o">+</span> <span class="n">eps</span>
@@ -279,18 +278,18 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">score_vector</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">party_list</span><span class="p">(</span><span class="n">cluster_df</span><span class="p">,</span> <span class="n">song</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">party_list</span><span class="p">(</span><span class="n">song_df</span><span class="p">,</span> <span class="n">song</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A list of song of all the songs from the cluster dataframe</span>
 <span class="sd">    sorted, from similarity between them.</span>
 
-<span class="sd">    :param pandas.DataFrame cluster_df:</span>
+<span class="sd">    :param pandas.DataFrame song_df:</span>
 <span class="sd">    :param str song:</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">song</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">song</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cluster_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-        <span class="n">song</span> <span class="o">=</span> <span class="n">cluster_df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">cluster_df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">song</span><span class="p">)[</span><span class="n">song</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">song</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">song</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">song_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">song</span> <span class="o">=</span> <span class="n">song_df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">song_df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">song</span><span class="p">)[</span><span class="n">song</span><span class="p">]</span>
 </pre></div>
 
            </div>
@@ -328,7 +327,6 @@
         <script type="text/javascript" src="../../_static/jquery.js"></script>
         <script type="text/javascript" src="../../_static/underscore.js"></script>
         <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   
