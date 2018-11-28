@@ -10,7 +10,13 @@ Video of the presentation in spanish can be found in [Youtube](https://www.youtu
 
 ## Installation and use
 
-Requirements are already added in `setup.py`, so you just need to run
+In order to use it, you just need to use pip
+
+```bash
+pip install foucluster
+```
+
+If you want to install it from source, requirements are already added in `setup.py`, so you just need to run
 
 ```bash
 python setup.py install
