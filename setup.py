@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='foucluster',
     description='Clustering of songs using Fourier Transform',
-    long_description='Similarities among songs are computed using Fast Fourier'
+    long_description='Similarities among songs are computed using Fast Fourier '
                 'Transform. With this information, unsupervised machine learning'
                  ' is applied.',
     url='https://github.com/cperales/foucluster',
