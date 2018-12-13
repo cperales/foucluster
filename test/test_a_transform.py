@@ -10,6 +10,7 @@ from foucluster.cluster import \
     score_cluster, n_cluster_methods, determinist_cluster
 import warnings
 
+
 class TestFullExample(unittest.TestCase):
 
     def test_example(self):
@@ -39,13 +40,12 @@ class TestFullExample(unittest.TestCase):
 
         metrics = distance_dict.keys()
 
-        print('Transforming MP3 songs into Fourier series...')
         all_songs(source_folder=source_folder,
                   output_folder=output_folder,
                   temp_folder=temp_folder,
                   rate_limit=rate_limit,
                   overwrite=True,
-                  plot=True,
+                  plot=False,
                   image_folder=image_folder,
                   multiprocess=mp,
                   encoder=encoder,

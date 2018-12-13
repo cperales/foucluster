@@ -161,9 +161,9 @@ def distance_matrix(fourier_folder,
         freq_x, features_x = limit_by_freq(freq_x,
                                            features_x,
                                            upper_limit=upper_limit)
-        for j in range(len(song_names)):
-            song_y = song_names[j]
+        for j in range(i, len(song_names)):
             if j > i:
+                song_y = song_names[j]
                 freq_y, features_y = dict_to_array(merged_file[song_y])
                 distance = pair_distance(freq_x=freq_x,
                                          features_x=features_x,
@@ -171,13 +171,11 @@ def distance_matrix(fourier_folder,
                                          features_y=features_y,
                                          warp=warp,
                                          distance_metric=distance_metric)
+                df.loc[song_x, song_y] = distance
                 # Save also in reverse
                 df.loc[song_y, song_x] = distance
-            elif j == i:
-                distance = 0.0
-            else:
-                distance = df.loc[song_x, song_y]
-            df.loc[song_x, song_y] = distance
+            else:  # j == i:
+                df.loc[song_x, song_x] = 0.0
 
     df = df.sort_index(axis=0, ascending=True)
     df = df.sort_index(axis=1, ascending=True)

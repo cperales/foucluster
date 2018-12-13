@@ -7,7 +7,7 @@ setup(
                 'Transform. With this information, unsupervised machine learning'
                  ' is applied.',
     url='https://github.com/cperales/foucluster',
-    version='1.2',
+    version='1.3',
     author='Carlos Perales',
     author_email='sir.perales@gmail.com',
     keywords=['cluster', 'Fourier', 'music', 'song',
@@ -19,7 +19,6 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Operating System :: POSIX :: Linux',
@@ -38,7 +37,8 @@ setup(
                       ],
     include_package_data=True,
     setup_requires=[],
-    tests_require=[],
+    tests_require=['pytest',
+                   'pytest-cov'],
     extras_require={
         'docs': [
             'sphinx'
