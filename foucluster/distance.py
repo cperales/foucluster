@@ -10,6 +10,19 @@ from .transform import limit_by_freq, dict_to_array
 # sqrt(2) with default precision np.float64
 _SQRT2 = np.sqrt(2)
 
+# DUMMY VECTOR CLASS
+class Data:
+    """
+    Dummy class in order to store into the dataframe.
+    """
+    def __init__(self, vector):
+        self.vector = vector
+        self.abs_distance = np.sum(self.vector)
+
+    def unpack(self):
+        return self.abs_distance
+
+
 
 # DISTANCE METRICS
 
@@ -90,7 +103,7 @@ def pair_distance(freq_x,
                   features_x,
                   freq_y,
                   features_y,
-                  warp=None,
+                  frames=None,
                   distance_metric='l2_norm'):
     """
     Distance between song x (with frequencies and features)
@@ -100,8 +113,8 @@ def pair_distance(freq_x,
     :param numpy.array features_x: features (fourier amplitude) of song x.
     :param numpy.array freq_y: frequencies of the song y.
     :param numpy.array features_y: features (fourier amplitude) of song y.
-    :param warp: to calculate distance with warp between series,
-        warp is float. If None, warp is not applied.
+    :param frames: number of frames to calculate distances. If None,
+        only one frame is considered
     :param str distance_metric: name of the metric to use. Options are:
 
             - 'positive': positive_error.
@@ -111,24 +124,31 @@ def pair_distance(freq_x,
 
     :return: distance in float.
     """
-    features_y_frame = np.interp(freq_x,
-                                 freq_y,
-                                 features_y)
 
-    if warp is None:
-        distance = distance_dict[distance_metric](features_x,
+    if frames is None:
+        frames = 1
+
+    freq_x_frames = np.array_split(freq_x, frames)
+    features_x_frames = np.array_split(features_x, frames)
+
+    distance_array = np.empty(frames)
+    for frame in range(frames):
+        # Get the frames
+        freq_x_frame = freq_x_frames[frame]
+        features_x_frame = features_x_frames[frame]
+        # Interpolate to get features from song y
+        features_y_frame = np.interp(freq_x_frame,
+                                     freq_y,
+                                     features_y)
+        distance = distance_dict[distance_metric](features_x_frame,
                                                   features_y_frame)
-    else:
-        distance = warp_distance(distance_metric,
-                                 features_x,
-                                 features_y_frame,
-                                 warp)
+        distance_array[frame] = distance  # / np.max(features_x_frame)
 
-    return distance
+    return distance_array
 
 
 def distance_matrix(fourier_folder,
-                    warp=None,
+                    frames=None,
                     upper_limit=6000.0,
                     distance_metric='l2_norm'):
     """
@@ -136,7 +156,7 @@ def distance_matrix(fourier_folder,
     can be calculated.
 
     :param fourier_folder:
-    :param warp:
+    :param frames:
     :param upper_limit:
     :param distance_metric:
     :return:
@@ -161,7 +181,7 @@ def distance_matrix(fourier_folder,
         freq_x, features_x = limit_by_freq(freq_x,
                                            features_x,
                                            upper_limit=upper_limit)
-        for j in range(len(song_names)):
+        for j in range(i, len(song_names)):
             song_y = song_names[j]
             if j > i:
                 freq_y, features_y = dict_to_array(merged_file[song_y])
@@ -169,15 +189,16 @@ def distance_matrix(fourier_folder,
                                          features_x=features_x,
                                          freq_y=freq_y,
                                          features_y=features_y,
-                                         warp=warp,
+                                         frames=frames,
                                          distance_metric=distance_metric)
-                # Save also in reverse
-                df.loc[song_y, song_x] = distance
-            elif j == i:
-                distance = 0.0
-            else:
-                distance = df.loc[song_x, song_y]
-            df.loc[song_x, song_y] = distance
+                # Save the symmetric option
+
+            else:  # j == i:
+                distance = np.zeros(frames)
+
+            vector_to_save = Data(distance)
+            df.loc[song_x, song_y] = vector_to_save
+            df.loc[song_y, song_x] = vector_to_save
 
     df = df.sort_index(axis=0, ascending=True)
     df = df.sort_index(axis=1, ascending=True)
