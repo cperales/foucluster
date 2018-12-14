@@ -29,13 +29,16 @@ class TestFullExample(unittest.TestCase):
 
         # WAV
         encoder = config['WAV']['encoder']
-        mp = True if str(config['WAV']['multiprocess']) == 'True' else False
+        mp_w = True if str(config['WAV']['multiprocess']) == 'True' else False
 
         # Fourier
         rate_limit = float(config['Fourier']['rate'])
-        warp = config['Fourier']['warp']
-        warp = None if str(warp) == 'None' else int(warp)
         step = float(config['Fourier']['step'])
+
+        # Distance
+        warp = config['Distance']['warp']
+        warp = None if str(warp) == 'None' else int(warp)
+        mp_d = True if str(config['Distance']['multiprocess']) == 'True' else False
 
         metrics = distance_dict.keys()
 
@@ -44,10 +47,10 @@ class TestFullExample(unittest.TestCase):
                   output_folder=output_folder,
                   temp_folder=temp_folder,
                   rate_limit=rate_limit,
-                  overwrite=True,
-                  plot=True,
+                  overwrite=False,
+                  plot=False,
                   image_folder=image_folder,
-                  multiprocess=mp,
+                  multiprocess=mp_w,
                   encoder=encoder,
                   step=step)
 
@@ -57,7 +60,7 @@ class TestFullExample(unittest.TestCase):
             print(' ', metric)
             song_df = distance_matrix(fourier_folder=output_folder,
                                       warp=warp,
-                                      upper_limit=rate_limit,
+                                      multiprocess=mp_d,
                                       distance_metric=metric)
 
             song_df.to_csv(os.path.join(distance_folder,

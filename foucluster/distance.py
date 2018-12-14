@@ -1,12 +1,12 @@
 import json
 import glob
 import os
-
 import numpy as np
 import pandas as pd
 from copy import deepcopy
 from .transform import limit_by_freq, dict_to_array
-
+from itertools import combinations_with_replacement
+import multiprocessing as mp
 # sqrt(2) with default precision np.float64
 _SQRT2 = np.sqrt(2)
 
@@ -129,7 +129,7 @@ def pair_distance(freq_x,
 
 def distance_matrix(fourier_folder,
                     warp=None,
-                    upper_limit=6000.0,
+                    multiprocess=False,
                     distance_metric='l2_norm'):
     """
     A distance matrix with all the songs of a folder
@@ -137,8 +137,8 @@ def distance_matrix(fourier_folder,
 
     :param fourier_folder:
     :param warp:
-    :param upper_limit:
-    :param distance_metric:
+    :param bool multiprocess:
+    :param str distance_metric:
     :return:
     """
     merged_file = os.path.join(fourier_folder, 'merged_file.json')
@@ -154,29 +154,63 @@ def distance_matrix(fourier_folder,
     df = pd.DataFrame(columns=song_names + ['Songs'])
     df['Songs'] = song_names
     df = df.set_index('Songs')
-    for i in range(len(song_names)):
-        song_x = song_names[i]
-        freq_x, features_x = dict_to_array(merged_file[song_x])
-        # Filtering frequencies
-        freq_x, features_x = limit_by_freq(freq_x,
-                                           features_x,
-                                           upper_limit=upper_limit)
-        for j in range(i, len(song_names)):
-            if j > i:
-                song_y = song_names[j]
-                freq_y, features_y = dict_to_array(merged_file[song_y])
-                distance = pair_distance(freq_x=freq_x,
-                                         features_x=features_x,
-                                         freq_y=freq_y,
-                                         features_y=features_y,
-                                         warp=warp,
-                                         distance_metric=distance_metric)
-                df.loc[song_x, song_y] = distance
-                # Save also in reverse
-                df.loc[song_y, song_x] = distance
-            else:  # j == i:
-                df.loc[song_x, song_x] = 0.0
+
+    if multiprocess is True:
+        ff_dict = {}
+        for song_name in song_names:
+            freq, features = dict_to_array(merged_file[song_name])
+            ff_dict.update({song_name: {'freq': freq, 'features': features}})
+
+        song_names_tuple = [comb for comb in combinations_with_replacement(song_names, r=2)]
+        args_to_mp = [(names[0], names[1], ff_dict, df, warp, distance_metric)
+                      for names in song_names_tuple]
+
+        with mp.Pool(processes=max(mp.cpu_count() - 1, 1)) as p:
+            p.starmap(multiprocess_matrix, args_to_mp)
+    else:
+        for i in range(len(song_names)):
+            for j in range(i, len(song_names)):
+                song_x = song_names[i]
+                if j > i:
+                    # Song_x
+                    freq_x, features_x = dict_to_array(merged_file[song_x])
+                    song_y = song_names[j]
+                    freq_y, features_y = dict_to_array(merged_file[song_y])
+                    distance = pair_distance(freq_x=freq_x,
+                                             features_x=features_x,
+                                             freq_y=freq_y,
+                                             features_y=features_y,
+                                             warp=warp,
+                                             distance_metric=distance_metric)
+                    df.loc[song_x, song_y] = distance
+                    # Save also in reverse
+                    df.loc[song_y, song_x] = distance
+                else:  # j == i:
+                    df.loc[song_x, song_x] = 0.0
 
     df = df.sort_index(axis=0, ascending=True)
     df = df.sort_index(axis=1, ascending=True)
     return df
+
+
+def multiprocess_matrix(song_x, song_y, ff_dict, df, warp, distance_metric):
+    # TODO: share the dataframe
+    if song_x == song_y:
+        df.loc[song_x, song_x] = 0.0
+    else:
+        # Song_x
+        freq_x = ff_dict[song_x]['freq']
+        features_x = ff_dict[song_x]['features']
+        # Song_y
+        freq_y = ff_dict[song_y]['freq']
+        features_y = ff_dict[song_y]['features']
+        # Distance
+        distance = pair_distance(freq_x=freq_x,
+                                 features_x=features_x,
+                                 freq_y=freq_y,
+                                 features_y=features_y,
+                                 warp=warp,
+                                 distance_metric=distance_metric)
+        df.loc[song_x, song_y] = distance
+        # Save also in reverse
+        df.loc[song_y, song_x] = distance
