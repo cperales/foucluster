@@ -6,13 +6,13 @@ python:
 git:
   depth: false
 install:
+  - sudo apt-get install mpg123 -y
   - pip install coveralls
   - python setup.py install
   - wget https://www.dropbox.com/s/sidecqpk6dhgsdq/song.zip
   - unzip song.zip
-  - sudo apt-get install mpg123 -y
 script:
-  - coverage run --source=foucluster --omit=env tests.py
+  - pytest --cov=foucluster
   - coveralls
 branches:
   only:

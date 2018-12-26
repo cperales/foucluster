@@ -38,7 +38,8 @@ setup(
                       ],
     include_package_data=True,
     setup_requires=[],
-    tests_require=[],
+    tests_require=['pytest',
+                   'pytest-cov'],
     extras_require={
         'docs': [
             'sphinx'

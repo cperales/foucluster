@@ -2,7 +2,6 @@ from foucluster.cluster import automatic_cluster, cluster_methods, party_list
 import pandas as pd
 import configparser
 import os
-from foucluster.distance import distance_dict
 import numpy as np
 import unittest
 import warnings
@@ -33,7 +32,6 @@ class TestCluster(unittest.TestCase):
             cluster_df = automatic_cluster(dist_df=song_df.copy(deep=True),
                                            method=cluster_method)
             self.assertGreater(np.unique(cluster_df['Cluster'].values).shape[0], 1)
-
 
     def test_party_list(self):
         """
