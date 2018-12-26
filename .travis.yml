@@ -7,7 +7,7 @@ git:
   depth: false
 install:
   - sudo apt-get install mpg123 -y
-  - pip install coveralls
+  - pip install coveralls pytest-cov
   - python setup.py install
   - wget https://www.dropbox.com/s/sidecqpk6dhgsdq/song.zip
   - unzip song.zip
