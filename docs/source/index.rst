@@ -41,9 +41,7 @@ The process to do the clustering can be divided in different steps
    distance
    cluster
 
-An example as a commented script, using this library, can be found in `example.py`.
-Python requirements are listed in requirements.txt, and it is also necessary install
-`mpg123` or `ffmpeg` for MP3 to WAV transform.
+An example is explained in
 
 .. toctree::
    :maxdepth: 1
@@ -51,6 +49,12 @@ Python requirements are listed in requirements.txt, and it is also necessary ins
 
    example
 
+It is also necessary install `mpg123` or `ffmpeg` for MP3 to WAV
+transform. For Ubuntu, it is as easy as
+
+.. code-block:: bash
+
+    sudo apt install mpg123
 
 
 

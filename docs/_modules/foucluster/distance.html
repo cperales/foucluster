@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>foucluster.distance &mdash; FouCluster 1.1 documentation</title>
+  <title>foucluster.distance &mdash; FouCluster 1.2 documentation</title>
   
 
   
@@ -224,7 +224,7 @@
     <span class="n">y_copy</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
     <span class="c1"># Starting the warping</span>
     <span class="n">min_diff</span> <span class="o">=</span> <span class="n">distance_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">warp</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">warp</span><span class="p">)):</span>
         <span class="c1"># Moving forward</span>
         <span class="n">forward_diff</span> <span class="o">=</span> <span class="n">distance_func</span><span class="p">(</span><span class="n">x_copy</span><span class="p">[</span><span class="n">i</span><span class="p">:],</span> <span class="n">y_copy</span><span class="p">[:</span><span class="o">-</span><span class="n">i</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">forward_diff</span> <span class="o">&lt;</span> <span class="n">min_diff</span><span class="p">:</span>
@@ -304,14 +304,16 @@
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">song_names</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;Songs&#39;</span><span class="p">])</span>
     <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Songs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">song_names</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;Songs&#39;</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">song_x</span> <span class="ow">in</span> <span class="n">song_names</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">song_names</span><span class="p">)):</span>
+        <span class="n">song_x</span> <span class="o">=</span> <span class="n">song_names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">freq_x</span><span class="p">,</span> <span class="n">features_x</span> <span class="o">=</span> <span class="n">dict_to_array</span><span class="p">(</span><span class="n">merged_file</span><span class="p">[</span><span class="n">song_x</span><span class="p">])</span>
         <span class="c1"># Filtering frequencies</span>
         <span class="n">freq_x</span><span class="p">,</span> <span class="n">features_x</span> <span class="o">=</span> <span class="n">limit_by_freq</span><span class="p">(</span><span class="n">freq_x</span><span class="p">,</span>
                                            <span class="n">features_x</span><span class="p">,</span>
                                            <span class="n">upper_limit</span><span class="o">=</span><span class="n">upper_limit</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">song_y</span> <span class="ow">in</span> <span class="n">song_names</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">song_x</span> <span class="o">!=</span> <span class="n">song_y</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">song_names</span><span class="p">)):</span>
+            <span class="n">song_y</span> <span class="o">=</span> <span class="n">song_names</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="n">i</span><span class="p">:</span>
                 <span class="n">freq_y</span><span class="p">,</span> <span class="n">features_y</span> <span class="o">=</span> <span class="n">dict_to_array</span><span class="p">(</span><span class="n">merged_file</span><span class="p">[</span><span class="n">song_y</span><span class="p">])</span>
                 <span class="n">distance</span> <span class="o">=</span> <span class="n">pair_distance</span><span class="p">(</span><span class="n">freq_x</span><span class="o">=</span><span class="n">freq_x</span><span class="p">,</span>
                                          <span class="n">features_x</span><span class="o">=</span><span class="n">features_x</span><span class="p">,</span>
@@ -321,8 +323,10 @@
                                          <span class="n">distance_metric</span><span class="o">=</span><span class="n">distance_metric</span><span class="p">)</span>
                 <span class="c1"># Save also in reverse</span>
                 <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">song_y</span><span class="p">,</span> <span class="n">song_x</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance</span>
-            <span class="k">else</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">j</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
                 <span class="n">distance</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">song_x</span><span class="p">,</span> <span class="n">song_y</span><span class="p">]</span>
             <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">song_x</span><span class="p">,</span> <span class="n">song_y</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -365,7 +369,6 @@
         <script type="text/javascript" src="../../_static/jquery.js"></script>
         <script type="text/javascript" src="../../_static/underscore.js"></script>
         <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
 
   

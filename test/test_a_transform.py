@@ -10,6 +10,7 @@ from foucluster.cluster import \
     score_cluster, n_cluster_methods, determinist_cluster
 import warnings
 
+
 class TestFullExample(unittest.TestCase):
 
     def test_example(self):
@@ -29,10 +30,12 @@ class TestFullExample(unittest.TestCase):
 
         # WAV
         encoder = config['WAV']['encoder']
-        mp_w = True if str(config['WAV']['multiprocess']) == 'True' else False
 
         # Fourier
+        mp = True if str(config['Fourier']['multiprocess']) == 'True' else False
         rate_limit = float(config['Fourier']['rate'])
+        warp = config['Fourier']['warp']
+        warp = None if str(warp) == 'None' else int(warp)
         step = float(config['Fourier']['step'])
 
         # Distance

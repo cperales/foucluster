@@ -10,7 +10,13 @@ Video of the presentation in spanish can be found in [Youtube](https://www.youtu
 
 ## Installation and use
 
-Requirements are already added in `setup.py`, so you just need to run
+In order to use it, you just need to use pip
+
+```bash
+pip install foucluster
+```
+
+If you want to install it from source, requirements are already added in `setup.py`, so you just need to run
 
 ```bash
 python setup.py install
@@ -24,7 +30,7 @@ Unzip the songs, so `.mp3` files can be found in `song/` folder.
 After that, just run
 
 ```bash
-python example.py
+python test/test_full.py
 ```
 
 Clustering with other songs can be done by adding them into `song/` folder.

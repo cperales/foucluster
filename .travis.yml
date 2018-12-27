@@ -1,18 +1,17 @@
 language: python
 python:
-  - 3.5
   - 3.6
   - 3.7-dev
 git:
   depth: false
 install:
-  - pip install coveralls
+  - sudo apt-get install mpg123 -y
+  - pip install coveralls pytest-cov
   - python setup.py install
   - wget https://www.dropbox.com/s/sidecqpk6dhgsdq/song.zip
   - unzip song.zip
-  - sudo apt-get install mpg123 -y
 script:
-  - coverage run --source=foucluster --omit=env tests.py
+  - pytest --cov=foucluster
   - coveralls
 branches:
   only:

@@ -1,10 +1,8 @@
 import unittest
-from foucluster.plot import fourier_plot, \
-    heatmap_song, song_plot, diff_plot
+from foucluster.plot import song_plot, diff_plot
 import configparser
 import os
 import json
-import matplotlib.pyplot as plt
 from scipy.io.wavfile import read
 import numpy as np
 

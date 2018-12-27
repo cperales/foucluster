@@ -6,12 +6,12 @@ import numpy as np
 
 eps = 10**(-10)
 
-n_cluster_methods = {'cluster.AgglomerativeClustering': cluster.AgglomerativeClustering,
-                     'cluster.SpectralClustering': cluster.SpectralClustering,
-                     'cluster.KMeans': cluster.KMeans}
+n_cluster_methods = {'AgglomerativeClustering': cluster.AgglomerativeClustering,
+                     'SpectralClustering': cluster.SpectralClustering,
+                     'KMeans': cluster.KMeans}
 
-non_n_cluster_methods = {'cluster.AffinityPropagation': cluster.AffinityPropagation,
-                         'cluster.MeanShift': cluster.MeanShift}
+non_n_cluster_methods = {'AffinityPropagation': cluster.AffinityPropagation,
+                         'MeanShift': cluster.MeanShift}
 
 
 cluster_methods = n_cluster_methods.copy()
@@ -35,7 +35,7 @@ def determinist_cluster(dist_df, method, n_clusters):
     """
     df_matrix = minmax_scale(dist_df)
     y = n_cluster_methods[method](n_clusters=n_clusters).fit_predict(df_matrix)
-    cluster_df = dist_df.copy(deep=True)
+    cluster_df = pd.DataFrame(df_matrix, index=dist_df.index, columns=dist_df.columns)
     cluster_df['Cluster'] = pd.Series(y, index=cluster_df.index)
     return cluster_df
 
@@ -61,7 +61,7 @@ def automatic_cluster(dist_df, method):
     else:
         clf = non_n_cluster_methods[method]()
     y = clf.fit_predict(df_matrix)
-    cluster_df = dist_df.copy(deep=True)
+    cluster_df = pd.DataFrame(df_matrix, index=dist_df.index, columns=dist_df.columns)
     cluster_df['Cluster'] = pd.Series(y, index=cluster_df.index)
     return cluster_df
 

@@ -62,12 +62,14 @@ def song_plot(aud_data,
     plt.close(fig)
 
 
-def diff_plot(song_1, song_2):
+def diff_plot(song_1, song_2, filename=None, folder=None):
     """
     Plot the difference between two series.
 
     :param dict song_1:
     :param dict song_2:
+    :param str filename:
+    :param str folder:
     :return:
     """
     x_1 = list(song_1.keys())
@@ -79,3 +81,8 @@ def diff_plot(song_1, song_2):
                            y_2)
     fig, ax_1 = plt.subplots()
     ax_1.fill_between(x_1, y_1, y_2_interp)
+    if filename is not None:
+        f = '' if folder is None else folder
+        plt.savefig(os.path.join(f,
+                                 filename + '.png'))
+    plt.close(fig)
