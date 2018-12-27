@@ -30,9 +30,9 @@ class TestFullExample(unittest.TestCase):
 
         # WAV
         encoder = config['WAV']['encoder']
-        mp = True if str(config['WAV']['multiprocess']) == 'True' else False
 
         # Fourier
+        mp = True if str(config['Fourier']['multiprocess']) == 'True' else False
         rate_limit = float(config['Fourier']['rate'])
         warp = config['Fourier']['warp']
         warp = None if str(warp) == 'None' else int(warp)
