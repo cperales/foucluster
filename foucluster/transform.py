@@ -6,6 +6,11 @@ import multiprocessing as mp
 import numpy as np
 from scipy.io.wavfile import read
 from .plot import fourier_plot, song_plot
+import logging
+
+
+logger = logging.getLogger('foucluster')
+logger.setLevel('DEBUG')
 
 
 def mp3_to_wav(mp3_file, wav_file, encoder='mpg123'):
@@ -43,13 +48,13 @@ def wav_to_fourier(wav_file,
         aud_data = np.mean(aud_data, axis=1)
 
     # Zero padding
-    len_data = len(aud_data)
+    len_data = aud_data.shape[0]
     channel_1 = np.zeros(2 ** (int(np.ceil(np.log2(len_data)))))
     channel_1[0:len_data] = aud_data
 
     # Fourier analysis
     fourier = np.abs(np.fft.fft(channel_1))
-    freq = np.linspace(0, rate, len(fourier))
+    freq = np.linspace(0, rate, fourier.shape[0])
 
     freq, fourier = limit_by_freq(freq,
                                   fourier,
@@ -57,8 +62,8 @@ def wav_to_fourier(wav_file,
     freq, fourier = group_by_freq(freq,
                                   fourier,
                                   step=step)
-
-    a = np.max(fourier) / 100.0  # Max frequency will be 100.0
+    # Max frequency should be 100.0
+    a = np.max(np.abs(fourier)) / 100.0
     fourier = fourier / a
 
     return freq, fourier
@@ -127,22 +132,45 @@ def dict_to_array(song_dict):
     return freq, features
 
 
+def check_wav(song, source_folder, temp_folder, encoder='mpg123'):
+    """
+    Check if song is already transformed into temp.
+
+    :param str song:
+    :param str source_folder:
+    :param str temp_folder:
+    :param str encoder:
+    :return:
+    """
+    # Name of files
+    song_name = os.path.splitext(song)[0]
+    mp3_file = os.path.join(source_folder, song)
+    wav_file = os.path.join(temp_folder, song_name + '.wav')
+    try:
+        if not os.path.isfile(wav_file):
+            mp3_to_wav(
+                mp3_file=mp3_file,
+                wav_file=wav_file,
+                encoder=encoder)
+        else:
+            pass
+    except MemoryError:
+        logger.error('MemoryError: %s MP3 couldn\'t be transformed into WAV', song_name)
+
+
 def time_to_frequency(song,
-                      source_folder,
                       temp_folder,
                       output_folder,
                       rate_limit=6000.0,
                       overwrite=True,
                       plot=True,
                       image_folder=None,
-                      encoder='mpg123',
                       step=5.0):
     """
     Transform a MP3 song into WAV format, and then into
     Fourier series.
 
     :param str song: name of the song, with MP3 extension.
-    :param str source_folder: folder where MP3 files are.
     :param str output_folder: folder where pickle files from
         frequency series are saved.
     :param str temp_folder: folder where wav files are saved.
@@ -152,27 +180,17 @@ def time_to_frequency(song,
     :param bool plot: if True, frequency series is plotted.
     :param image_folder: if plotting is True, is the folder
         where the Fourier data is saved.
-    :param str encoder: encoder from MP3 to WAV.
     :param float step: step of the Fourier series.
     :return:
     """
-    song_name = os.path.splitext(song)[0]
-    json_name = song_name + '.json'
-
     # Name of files
-    mp3_file = os.path.join(source_folder, song)
+    song_name = os.path.splitext(song)[0]
+    json_name = os.path.join(output_folder, song_name + '.json')
     wav_file = os.path.join(temp_folder, song_name + '.wav')
 
-    full_json_name = os.path.join(output_folder, json_name)
-    if not os.path.isfile(full_json_name) or overwrite is True:
+    if not os.path.isfile(json_name) or overwrite is True:
         # Fourier transformation
         try:
-            if not os.path.isfile(wav_file) or overwrite is True:
-                mp3_to_wav(
-                    mp3_file=mp3_file,
-                    wav_file=wav_file,
-                    encoder=encoder)
-
             frequencies, fourier_series = wav_to_fourier(wav_file=wav_file,
                                                          rate_limit=rate_limit,
                                                          step=step)
@@ -180,7 +198,7 @@ def time_to_frequency(song,
             # Save as JSON
             json_to_save = {song: {str(x): y for x, y in
                                    zip(frequencies, fourier_series)}}
-            with open(full_json_name, 'w') as output:
+            with open(json_name, 'w') as output:
                 json.dump(json_to_save, output)
 
             # Plotting
@@ -189,8 +207,9 @@ def time_to_frequency(song,
                              features=fourier_series,
                              folder=image_folder,
                              filename=song_name)
+            logger.debug('%s transformed', song_name)
         except MemoryError:
-            print('{} gives MemoryError'.format(song_name))
+            logger.error('MemoryError: %s couldn\'t be Fourier transformed', song_name)
 
 
 def all_songs(source_folder,
@@ -232,23 +251,33 @@ def all_songs(source_folder,
     if plot:
         os.makedirs(image_folder, exist_ok=True)
 
+    # Check if mp3 is already transformed into wav. Right
+    # now, foucluster doesn't have a direct read from mp3
+    logger.info('Checking if songs are in WAV format...')
+    [check_wav(song=song,
+               source_folder=source_folder,
+               temp_folder=temp_folder,
+               encoder=encoder)
+     for song in os.listdir(source_folder)]
+
     if multiprocess is True:
-        songs = [(song, source_folder, temp_folder, output_folder, rate_limit,
-                  overwrite, plot, image_folder, encoder, step)
+        logger.debug('Fourier is applied in multiprocess')
+        songs = [(song, temp_folder, output_folder, rate_limit,
+                  overwrite, plot, image_folder, step)
                  for song in os.listdir(source_folder)]
 
-        with mp.Pool(processes=max(mp.cpu_count() - 1, 1)) as p:
+        # with mp.Pool(processes=max(int(mp.cpu_count() / 2.0), 1)) as p:
+        with mp.Pool(processes=max(int(mp.cpu_count() - 1), 1)) as p:
             p.starmap(time_to_frequency, songs)
     else:
+        logger.debug('Fourier is applied in single core')
         [time_to_frequency(song=song,
-                           source_folder=source_folder,
                            temp_folder=temp_folder,
                            output_folder=output_folder,
                            rate_limit=rate_limit,
                            overwrite=overwrite,
                            plot=plot,
                            image_folder=image_folder,
-                           encoder=encoder,
                            step=step)
          for song in os.listdir(source_folder)]
 

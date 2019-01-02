@@ -33,9 +33,10 @@ def determinist_cluster(dist_df, method, n_clusters):
     :param int n_clusters:
     :return: pandas.DataFrame with a column with clusters.
     """
-    df_matrix = minmax_scale(dist_df)
+    df_unpack = dist_df.unpack()
+    df_matrix = minmax_scale(df_unpack)
     y = n_cluster_methods[method](n_clusters=n_clusters).fit_predict(df_matrix)
-    cluster_df = pd.DataFrame(df_matrix, index=dist_df.index, columns=dist_df.columns)
+    cluster_df = pd.DataFrame(df_matrix, index=df_unpack.index, columns=df_unpack.columns)
     cluster_df['Cluster'] = pd.Series(y, index=cluster_df.index)
     return cluster_df
 

@@ -1,27 +1,106 @@
 import json
 import glob
 import os
-
 import numpy as np
 import pandas as pd
-from copy import deepcopy
-from .transform import limit_by_freq, dict_to_array
-
+from .transform import dict_to_array
+from itertools import combinations_with_replacement
+import multiprocessing as mp
+import copy
 # sqrt(2) with default precision np.float64
 _SQRT2 = np.sqrt(2)
 
-# DUMMY VECTOR CLASS
+
 class Data:
     """
     Dummy class in order to store into the dataframe.
     """
-    def __init__(self, vector):
-        self.vector = vector
-        self.abs_distance = np.sum(self.vector)
+    def __init__(self, columns, shape):
+        self.columns = columns
+        self.index = columns
+        self.dict_ = {c_1: {c_2: [] for c_2 in columns}
+                      for c_1 in columns}
+        self.shape = shape
+
+    def loc(self, pos_x, pos_y, vector):
+        """
+
+        :param pos_x:
+        :param pos_y:
+        :param vector:
+        :return:
+        """
+        self.dict_[pos_x][pos_y] = vector
+        self.dict_[pos_y][pos_x] = self.dict_[pos_x][pos_y]
+
+    def copy(self, deep=True):
+        """
+
+        :param deep:
+        :return:
+        """
+        if deep is True:
+            return copy.deepcopy(self)
+        else:
+            return copy.copy(self)
 
     def unpack(self):
-        return self.abs_distance
+        """
 
+        :return:
+        """
+        if self.shape > 1:
+            range_str = [str(s) for s in range(self.shape)]
+            iterables = [self.columns, range_str]
+            multiindex = pd.MultiIndex.from_product(iterables, names=['song', 'frame'])
+            # multiindex = [i for i in itertools.product(self.columns, range_str, repeat=1)]
+            df = pd.DataFrame(columns=multiindex, index=self.columns, dtype=np.float64)
+
+            for c_1 in self.columns:
+                for c_2 in self.columns:
+                    for s in range_str:
+                        df.loc[c_1][c_2, s] = self.dict_[c_1][c_2][int(s)]
+        else:
+            df = pd.DataFrame(columns=self.columns + ['song'], dtype=np.float64)
+            df['song'] = self.columns
+            df = df.set_index('song')
+
+            for c_1 in self.columns:
+                for c_2 in self.columns:
+                    df.loc[c_1, c_2] = self.max_diff(self, c_1, c_2)
+
+        return df
+
+    def min_diff(self, song_x, song_y):
+        """
+
+        :param song_x:
+        :param song_y:
+        :return:
+        """
+        array = self.dict_[song_x][song_y]
+        return np.min(array)
+
+    def max_diff(self, song_x, song_y):
+        """
+
+        :param song_x:
+        :param song_y:
+        :return:
+        """
+        array = self.dict_[song_x][song_y]
+        return np.max(array)
+
+    def pos_diff(self, song_x, song_y, pos):
+        """
+
+        :param song_x:
+        :param song_y:
+        :param pos:
+        :return:
+        """
+        array = self.dict_[song_x][song_y]
+        return array[pos]
 
 
 # DISTANCE METRICS
@@ -73,6 +152,8 @@ distance_dict = {'positive': positive_error,
 
 def warp_distance(distance_metric, x, y, warp=200):
     """
+    DEPRECATED. Calculate the minimum distance among
+    x and y arrays after warping.
 
     :param str distance_metric:
     :param np.array x:
@@ -83,8 +164,8 @@ def warp_distance(distance_metric, x, y, warp=200):
     # Selecting the array
     distance_func = distance_dict[distance_metric]
     # Copying the value
-    x_copy = deepcopy(x)
-    y_copy = deepcopy(y)
+    x_copy = copy.deepcopy(x)
+    y_copy = copy.deepcopy(y)
     # Starting the warping
     min_diff = distance_func(x, y)
     for i in range(1, int(warp)):
@@ -148,8 +229,8 @@ def pair_distance(freq_x,
 
 
 def distance_matrix(fourier_folder,
+                    multiprocess=False,
                     frames=None,
-                    upper_limit=6000.0,
                     distance_metric='l2_norm'):
     """
     A distance matrix with all the songs of a folder
@@ -157,8 +238,9 @@ def distance_matrix(fourier_folder,
 
     :param fourier_folder:
     :param frames:
-    :param upper_limit:
     :param distance_metric:
+    :param bool multiprocess:
+    :param str distance_metric:
     :return:
     """
     merged_file = os.path.join(fourier_folder, 'merged_file.json')
@@ -171,35 +253,85 @@ def distance_matrix(fourier_folder,
 
     # Creating a squared DataFrame as matrix distance
     song_names = list(merged_file.keys())
-    df = pd.DataFrame(columns=song_names + ['Songs'])
-    df['Songs'] = song_names
-    df = df.set_index('Songs')
-    for i in range(len(song_names)):
-        song_x = song_names[i]
-        freq_x, features_x = dict_to_array(merged_file[song_x])
-        # Filtering frequencies
-        freq_x, features_x = limit_by_freq(freq_x,
-                                           features_x,
-                                           upper_limit=upper_limit)
-        for j in range(i, len(song_names)):
-            song_y = song_names[j]
-            if j > i:
-                freq_y, features_y = dict_to_array(merged_file[song_y])
-                distance = pair_distance(freq_x=freq_x,
-                                         features_x=features_x,
-                                         freq_y=freq_y,
-                                         features_y=features_y,
-                                         frames=frames,
-                                         distance_metric=distance_metric)
-                # Save the symmetric option
+    data = Data(columns=song_names, shape=frames)
 
-            else:  # j == i:
-                distance = np.zeros(frames)
+    if multiprocess is True:
+        ff_dict = {}
+        for song_name in song_names:
+            freq, features = dict_to_array(merged_file[song_name])
+            ff_dict.update({song_name: {'freq': freq, 'features': features}})
 
-            vector_to_save = Data(distance)
-            df.loc[song_x, song_y] = vector_to_save
-            df.loc[song_y, song_x] = vector_to_save
+        mgr = mp.Manager()
+        ns = mgr.Namespace()
+        ns.distance_metric = distance_metric
+        ns.ff_dict = ff_dict
+        ns.frames = frames
+        # Distances are saved in a shared dict
+        shared_dict = mgr.dict()
+        for song_name in song_names:
+            shared_dict[song_name] = mgr.dict()
+        ns.dict = shared_dict
 
-    df = df.sort_index(axis=0, ascending=True)
-    df = df.sort_index(axis=1, ascending=True)
-    return df
+        # Args must be in list
+        song_names_tuple = [comb for comb in combinations_with_replacement(song_names, r=2)]
+        args_to_mp = [(names[0], names[1], ns) for names in song_names_tuple]
+
+        with mp.Pool(processes=max(mp.cpu_count() - 1, 1)) as p:
+            p.starmap(multiprocess_matrix, args_to_mp)
+
+        # Retrieve the information and save into the dataframe
+        for k_1 in ns.dict.keys():
+            for k_2 in ns.dict.keys():
+                data.loc(k_1, k_2, ns.dict[k_1][k_2])
+    else:
+        for i in range(len(song_names)):
+            for j in range(i, len(song_names)):
+                song_x = song_names[i]
+                if j > i:
+                    # Song_x
+                    freq_x, features_x = dict_to_array(merged_file[song_x])
+                    song_y = song_names[j]
+                    freq_y, features_y = dict_to_array(merged_file[song_y])
+                    distance = pair_distance(freq_x=freq_x,
+                                             features_x=features_x,
+                                             freq_y=freq_y,
+                                             features_y=features_y,
+                                             frames=frames,
+                                             distance_metric=distance_metric)
+                    data.loc(song_x, song_y, distance)
+                    # Save also in reverse
+                    data.loc(song_y, song_x, distance)
+                else:
+                    data.loc(song_x, song_x, np.zeros(frames))
+    # df = data.unpack()
+    # return df
+    return data
+
+
+def multiprocess_matrix(song_x, song_y, ns):
+    """
+
+    :param song_x:
+    :param song_y:
+    :param ns: Namespace.
+    :return:
+    """
+    if song_x == song_y:
+        ns.dict[song_x][song_x] = 0.0
+    else:
+        # Song_x
+        freq_x = ns.ff_dict[song_x]['freq']
+        features_x = ns.ff_dict[song_x]['features']
+        # Song_y
+        freq_y = ns.ff_dict[song_y]['freq']
+        features_y = ns.ff_dict[song_y]['features']
+        # Distance
+        distance = pair_distance(freq_x=freq_x,
+                                 features_x=features_x,
+                                 freq_y=freq_y,
+                                 features_y=features_y,
+                                 frames=ns.frames,
+                                 distance_metric=ns.distance_metric)
+        ns.dict[song_x][song_y] = distance
+        # Save also in reverse
+        ns.dict[song_y][song_x] = distance

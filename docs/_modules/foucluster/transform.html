@@ -156,6 +156,11 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.io.wavfile</span> <span class="k">import</span> <span class="n">read</span>
 <span class="kn">from</span> <span class="nn">.plot</span> <span class="k">import</span> <span class="n">fourier_plot</span><span class="p">,</span> <span class="n">song_plot</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;foucluster&#39;</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="mp3_to_wav"><a class="viewcode-back" href="../../transform.html#foucluster.transform.mp3_to_wav">[docs]</a><span class="k">def</span> <span class="nf">mp3_to_wav</span><span class="p">(</span><span class="n">mp3_file</span><span class="p">,</span> <span class="n">wav_file</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="s1">&#39;mpg123&#39;</span><span class="p">):</span>
@@ -193,13 +198,13 @@
         <span class="n">aud_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">aud_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># Zero padding</span>
-    <span class="n">len_data</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">aud_data</span><span class="p">)</span>
+    <span class="n">len_data</span> <span class="o">=</span> <span class="n">aud_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">channel_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">len_data</span><span class="p">)))))</span>
     <span class="n">channel_1</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">len_data</span><span class="p">]</span> <span class="o">=</span> <span class="n">aud_data</span>
 
     <span class="c1"># Fourier analysis</span>
     <span class="n">fourier</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">channel_1</span><span class="p">))</span>
-    <span class="n">freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">fourier</span><span class="p">))</span>
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">fourier</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="n">freq</span><span class="p">,</span> <span class="n">fourier</span> <span class="o">=</span> <span class="n">limit_by_freq</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span>
                                   <span class="n">fourier</span><span class="p">,</span>
@@ -207,8 +212,8 @@
     <span class="n">freq</span><span class="p">,</span> <span class="n">fourier</span> <span class="o">=</span> <span class="n">group_by_freq</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span>
                                   <span class="n">fourier</span><span class="p">,</span>
                                   <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
-
-    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">fourier</span><span class="p">)</span> <span class="o">/</span> <span class="mf">100.0</span>  <span class="c1"># Max frequency will be 100.0</span>
+    <span class="c1"># Max frequency should be 100.0</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">fourier</span><span class="p">))</span> <span class="o">/</span> <span class="mf">100.0</span>
     <span class="n">fourier</span> <span class="o">=</span> <span class="n">fourier</span> <span class="o">/</span> <span class="n">a</span>
 
     <span class="k">return</span> <span class="n">freq</span><span class="p">,</span> <span class="n">fourier</span></div>
@@ -277,22 +282,45 @@
     <span class="k">return</span> <span class="n">freq</span><span class="p">,</span> <span class="n">features</span>
 
 
+<span class="k">def</span> <span class="nf">check_wav</span><span class="p">(</span><span class="n">song</span><span class="p">,</span> <span class="n">source_folder</span><span class="p">,</span> <span class="n">temp_folder</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="s1">&#39;mpg123&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if song is already transformed into temp.</span>
+
+<span class="sd">    :param str song:</span>
+<span class="sd">    :param str source_folder:</span>
+<span class="sd">    :param str temp_folder:</span>
+<span class="sd">    :param str encoder:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Name of files</span>
+    <span class="n">song_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">song</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">mp3_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">source_folder</span><span class="p">,</span> <span class="n">song</span><span class="p">)</span>
+    <span class="n">wav_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_folder</span><span class="p">,</span> <span class="n">song_name</span> <span class="o">+</span> <span class="s1">&#39;.wav&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">wav_file</span><span class="p">):</span>
+            <span class="n">mp3_to_wav</span><span class="p">(</span>
+                <span class="n">mp3_file</span><span class="o">=</span><span class="n">mp3_file</span><span class="p">,</span>
+                <span class="n">wav_file</span><span class="o">=</span><span class="n">wav_file</span><span class="p">,</span>
+                <span class="n">encoder</span><span class="o">=</span><span class="n">encoder</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">except</span> <span class="ne">MemoryError</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;MemoryError: </span><span class="si">%s</span><span class="s1"> MP3 couldn</span><span class="se">\&#39;</span><span class="s1">t be transformed into WAV&#39;</span><span class="p">,</span> <span class="n">song_name</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="time_to_frequency"><a class="viewcode-back" href="../../transform.html#foucluster.transform.time_to_frequency">[docs]</a><span class="k">def</span> <span class="nf">time_to_frequency</span><span class="p">(</span><span class="n">song</span><span class="p">,</span>
-                      <span class="n">source_folder</span><span class="p">,</span>
                       <span class="n">temp_folder</span><span class="p">,</span>
                       <span class="n">output_folder</span><span class="p">,</span>
                       <span class="n">rate_limit</span><span class="o">=</span><span class="mf">6000.0</span><span class="p">,</span>
                       <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                       <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                       <span class="n">image_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                      <span class="n">encoder</span><span class="o">=</span><span class="s1">&#39;mpg123&#39;</span><span class="p">,</span>
                       <span class="n">step</span><span class="o">=</span><span class="mf">5.0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transform a MP3 song into WAV format, and then into</span>
 <span class="sd">    Fourier series.</span>
 
 <span class="sd">    :param str song: name of the song, with MP3 extension.</span>
-<span class="sd">    :param str source_folder: folder where MP3 files are.</span>
 <span class="sd">    :param str output_folder: folder where pickle files from</span>
 <span class="sd">        frequency series are saved.</span>
 <span class="sd">    :param str temp_folder: folder where wav files are saved.</span>
@@ -302,27 +330,17 @@
 <span class="sd">    :param bool plot: if True, frequency series is plotted.</span>
 <span class="sd">    :param image_folder: if plotting is True, is the folder</span>
 <span class="sd">        where the Fourier data is saved.</span>
-<span class="sd">    :param str encoder: encoder from MP3 to WAV.</span>
 <span class="sd">    :param float step: step of the Fourier series.</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">song_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">song</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">json_name</span> <span class="o">=</span> <span class="n">song_name</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span>
-
     <span class="c1"># Name of files</span>
-    <span class="n">mp3_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">source_folder</span><span class="p">,</span> <span class="n">song</span><span class="p">)</span>
+    <span class="n">song_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">song</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">json_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">song_name</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">)</span>
     <span class="n">wav_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_folder</span><span class="p">,</span> <span class="n">song_name</span> <span class="o">+</span> <span class="s1">&#39;.wav&#39;</span><span class="p">)</span>
 
-    <span class="n">full_json_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">json_name</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">full_json_name</span><span class="p">)</span> <span class="ow">or</span> <span class="n">overwrite</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">json_name</span><span class="p">)</span> <span class="ow">or</span> <span class="n">overwrite</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
         <span class="c1"># Fourier transformation</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">wav_file</span><span class="p">)</span> <span class="ow">or</span> <span class="n">overwrite</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="n">mp3_to_wav</span><span class="p">(</span>
-                    <span class="n">mp3_file</span><span class="o">=</span><span class="n">mp3_file</span><span class="p">,</span>
-                    <span class="n">wav_file</span><span class="o">=</span><span class="n">wav_file</span><span class="p">,</span>
-                    <span class="n">encoder</span><span class="o">=</span><span class="n">encoder</span><span class="p">)</span>
-
             <span class="n">frequencies</span><span class="p">,</span> <span class="n">fourier_series</span> <span class="o">=</span> <span class="n">wav_to_fourier</span><span class="p">(</span><span class="n">wav_file</span><span class="o">=</span><span class="n">wav_file</span><span class="p">,</span>
                                                          <span class="n">rate_limit</span><span class="o">=</span><span class="n">rate_limit</span><span class="p">,</span>
                                                          <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
@@ -330,7 +348,7 @@
             <span class="c1"># Save as JSON</span>
             <span class="n">json_to_save</span> <span class="o">=</span> <span class="p">{</span><span class="n">song</span><span class="p">:</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="n">y</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span>
                                    <span class="nb">zip</span><span class="p">(</span><span class="n">frequencies</span><span class="p">,</span> <span class="n">fourier_series</span><span class="p">)}}</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">full_json_name</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">json_name</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
                 <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">json_to_save</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
 
             <span class="c1"># Plotting</span>
@@ -339,8 +357,9 @@
                              <span class="n">features</span><span class="o">=</span><span class="n">fourier_series</span><span class="p">,</span>
                              <span class="n">folder</span><span class="o">=</span><span class="n">image_folder</span><span class="p">,</span>
                              <span class="n">filename</span><span class="o">=</span><span class="n">song_name</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> transformed&#39;</span><span class="p">,</span> <span class="n">song_name</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">MemoryError</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> gives MemoryError&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">song_name</span><span class="p">))</span></div>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;MemoryError: </span><span class="si">%s</span><span class="s1"> couldn</span><span class="se">\&#39;</span><span class="s1">t be Fourier transformed&#39;</span><span class="p">,</span> <span class="n">song_name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="all_songs"><a class="viewcode-back" href="../../transform.html#foucluster.transform.all_songs">[docs]</a><span class="k">def</span> <span class="nf">all_songs</span><span class="p">(</span><span class="n">source_folder</span><span class="p">,</span>
@@ -382,23 +401,33 @@
     <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">image_folder</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
+    <span class="c1"># Check if mp3 is already transformed into wav. Right</span>
+    <span class="c1"># now, foucluster doesn&#39;t have a direct read from mp3</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Checking if songs are in WAV format...&#39;</span><span class="p">)</span>
+    <span class="p">[</span><span class="n">check_wav</span><span class="p">(</span><span class="n">song</span><span class="o">=</span><span class="n">song</span><span class="p">,</span>
+               <span class="n">source_folder</span><span class="o">=</span><span class="n">source_folder</span><span class="p">,</span>
+               <span class="n">temp_folder</span><span class="o">=</span><span class="n">temp_folder</span><span class="p">,</span>
+               <span class="n">encoder</span><span class="o">=</span><span class="n">encoder</span><span class="p">)</span>
+     <span class="k">for</span> <span class="n">song</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">source_folder</span><span class="p">)]</span>
+
     <span class="k">if</span> <span class="n">multiprocess</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="n">songs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">song</span><span class="p">,</span> <span class="n">source_folder</span><span class="p">,</span> <span class="n">temp_folder</span><span class="p">,</span> <span class="n">output_folder</span><span class="p">,</span> <span class="n">rate_limit</span><span class="p">,</span>
-                  <span class="n">overwrite</span><span class="p">,</span> <span class="n">plot</span><span class="p">,</span> <span class="n">image_folder</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Fourier is applied in multiprocess&#39;</span><span class="p">)</span>
+        <span class="n">songs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">song</span><span class="p">,</span> <span class="n">temp_folder</span><span class="p">,</span> <span class="n">output_folder</span><span class="p">,</span> <span class="n">rate_limit</span><span class="p">,</span>
+                  <span class="n">overwrite</span><span class="p">,</span> <span class="n">plot</span><span class="p">,</span> <span class="n">image_folder</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
                  <span class="k">for</span> <span class="n">song</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">source_folder</span><span class="p">)]</span>
 
-        <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+        <span class="c1"># with mp.Pool(processes=max(int(mp.cpu_count() / 2.0), 1)) as p:</span>
+        <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
             <span class="n">p</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span><span class="n">time_to_frequency</span><span class="p">,</span> <span class="n">songs</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Fourier is applied in single core&#39;</span><span class="p">)</span>
         <span class="p">[</span><span class="n">time_to_frequency</span><span class="p">(</span><span class="n">song</span><span class="o">=</span><span class="n">song</span><span class="p">,</span>
-                           <span class="n">source_folder</span><span class="o">=</span><span class="n">source_folder</span><span class="p">,</span>
                            <span class="n">temp_folder</span><span class="o">=</span><span class="n">temp_folder</span><span class="p">,</span>
                            <span class="n">output_folder</span><span class="o">=</span><span class="n">output_folder</span><span class="p">,</span>
                            <span class="n">rate_limit</span><span class="o">=</span><span class="n">rate_limit</span><span class="p">,</span>
                            <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">,</span>
                            <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">,</span>
                            <span class="n">image_folder</span><span class="o">=</span><span class="n">image_folder</span><span class="p">,</span>
-                           <span class="n">encoder</span><span class="o">=</span><span class="n">encoder</span><span class="p">,</span>
                            <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
          <span class="k">for</span> <span class="n">song</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">source_folder</span><span class="p">)]</span>
 
@@ -444,6 +473,7 @@
         <script type="text/javascript" src="../../_static/jquery.js"></script>
         <script type="text/javascript" src="../../_static/underscore.js"></script>
         <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
     
 
   

@@ -2,7 +2,6 @@ from foucluster.cluster import automatic_cluster, cluster_methods, party_list
 import pandas as pd
 import configparser
 import os
-from foucluster.distance import distance_dict
 import numpy as np
 import unittest
 import warnings
@@ -28,12 +27,11 @@ class TestCluster(unittest.TestCase):
         song_df = pd.read_csv(os.path.join(distance_folder,
                                            metric + '.csv'),
                               sep=';')
-        song_df = song_df.set_index('Songs')
+        song_df = song_df.set_index('song')
         for cluster_method in cluster_methods:
             cluster_df = automatic_cluster(dist_df=song_df.copy(deep=True),
                                            method=cluster_method)
             self.assertGreater(np.unique(cluster_df['Cluster'].values).shape[0], 1)
-
 
     def test_party_list(self):
         """
@@ -53,7 +51,7 @@ class TestCluster(unittest.TestCase):
         song_df = pd.read_csv(os.path.join(distance_folder,
                                                metric + '.csv'),
                                   sep=';')
-        song_df = song_df.set_index('Songs')
+        song_df = song_df.set_index('song')
         first_song = song_df.index[0]
         song_list = party_list(song_df)
         order = True

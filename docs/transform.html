@@ -211,7 +211,7 @@ This Fourier Series is limited.</p>
 with the following function.</p>
 <dl class="function">
 <dt id="foucluster.transform.time_to_frequency">
-<code class="descclassname">foucluster.transform.</code><code class="descname">time_to_frequency</code><span class="sig-paren">(</span><em>song</em>, <em>source_folder</em>, <em>temp_folder</em>, <em>output_folder</em>, <em>rate_limit=6000.0</em>, <em>overwrite=True</em>, <em>plot=True</em>, <em>image_folder=None</em>, <em>encoder='mpg123'</em>, <em>step=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/foucluster/transform.html#time_to_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#foucluster.transform.time_to_frequency" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">foucluster.transform.</code><code class="descname">time_to_frequency</code><span class="sig-paren">(</span><em>song</em>, <em>temp_folder</em>, <em>output_folder</em>, <em>rate_limit=6000.0</em>, <em>overwrite=True</em>, <em>plot=True</em>, <em>image_folder=None</em>, <em>step=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/foucluster/transform.html#time_to_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#foucluster.transform.time_to_frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform a MP3 song into WAV format, and then into
 Fourier series.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -220,7 +220,6 @@ Fourier series.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>song</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – name of the song, with MP3 extension.</li>
-<li><strong>source_folder</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – folder where MP3 files are.</li>
 <li><strong>output_folder</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – folder where pickle files from
 frequency series are saved.</li>
 <li><strong>temp_folder</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – folder where wav files are saved.</li>
@@ -230,7 +229,6 @@ series.</li>
 <li><strong>plot</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, frequency series is plotted.</li>
 <li><strong>image_folder</strong> – if plotting is True, is the folder
 where the Fourier data is saved.</li>
-<li><strong>encoder</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – encoder from MP3 to WAV.</li>
 <li><strong>step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – step of the Fourier series.</li>
 </ul>
 </td>
@@ -323,6 +321,7 @@ are run in several cores. It may be unstable (consume to much RAM).</li>
         <script type="text/javascript" src="_static/jquery.js"></script>
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
     
 
   
