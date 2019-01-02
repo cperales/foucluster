@@ -159,7 +159,7 @@ be found in <cite>distance.py</cite> module.</p>
 <p>Distance between two songs is calculated with:</p>
 <dl class="function">
 <dt id="foucluster.distance.pair_distance">
-<code class="descclassname">foucluster.distance.</code><code class="descname">pair_distance</code><span class="sig-paren">(</span><em>freq_x</em>, <em>features_x</em>, <em>freq_y</em>, <em>features_y</em>, <em>warp=None</em>, <em>distance_metric='l2_norm'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/foucluster/distance.html#pair_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#foucluster.distance.pair_distance" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">foucluster.distance.</code><code class="descname">pair_distance</code><span class="sig-paren">(</span><em>freq_x</em>, <em>features_x</em>, <em>freq_y</em>, <em>features_y</em>, <em>distance_metric='l2_norm'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/foucluster/distance.html#pair_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#foucluster.distance.pair_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Distance between song x (with frequencies and features)
 and song y is calculated.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -171,8 +171,6 @@ and song y is calculated.</p>
 <li><strong>features_x</strong> (<em>numpy.array</em>) – features (fourier amplitude) of song x.</li>
 <li><strong>freq_y</strong> (<em>numpy.array</em>) – frequencies of the song y.</li>
 <li><strong>features_y</strong> (<em>numpy.array</em>) – features (fourier amplitude) of song y.</li>
-<li><strong>warp</strong> – to calculate distance with warp between series,
-warp is float. If None, warp is not applied.</li>
 <li><strong>distance_metric</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – <p>name of the metric to use. Options are:</p>
 <ul>
 <li>’positive’: positive_error.</li>
@@ -195,7 +193,7 @@ warp is float. If None, warp is not applied.</li>
 (just the output from <cite>foucluster.transform.all_songs</cite>,</p>
 <dl class="function">
 <dt id="foucluster.distance.distance_matrix">
-<code class="descclassname">foucluster.distance.</code><code class="descname">distance_matrix</code><span class="sig-paren">(</span><em>fourier_folder</em>, <em>warp=None</em>, <em>upper_limit=6000.0</em>, <em>distance_metric='l2_norm'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/foucluster/distance.html#distance_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#foucluster.distance.distance_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">foucluster.distance.</code><code class="descname">distance_matrix</code><span class="sig-paren">(</span><em>fourier_folder</em>, <em>multiprocess=False</em>, <em>distance_metric='l2_norm'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/foucluster/distance.html#distance_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#foucluster.distance.distance_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>A distance matrix with all the songs of a folder
 can be calculated.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -204,9 +202,8 @@ can be calculated.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>fourier_folder</strong> – </li>
-<li><strong>warp</strong> – </li>
-<li><strong>upper_limit</strong> – </li>
-<li><strong>distance_metric</strong> – </li>
+<li><strong>multiprocess</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – </li>
+<li><strong>distance_metric</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </li>
 </ul>
 </td>
 </tr>
@@ -264,6 +261,7 @@ can be calculated.</p>
         <script type="text/javascript" src="_static/jquery.js"></script>
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
     
 
   

@@ -32,26 +32,20 @@ class TestFullExample(unittest.TestCase):
         encoder = config['WAV']['encoder']
 
         # Fourier
-        mp = True if str(config['Fourier']['multiprocess']) == 'True' else False
+        mp_w = True if str(config['Fourier']['multiprocess']) == 'True' else False
         rate_limit = float(config['Fourier']['rate'])
-        warp = config['Fourier']['warp']
-        warp = None if str(warp) == 'None' else int(warp)
         step = float(config['Fourier']['step'])
 
         # Distance
-        warp = config['Distance']['warp']
-        warp = None if str(warp) == 'None' else int(warp)
         mp_d = True if str(config['Distance']['multiprocess']) == 'True' else False
-
-        metrics = distance_dict.keys()
 
         print('Transforming MP3 songs into Fourier series...')
         all_songs(source_folder=source_folder,
                   output_folder=output_folder,
                   temp_folder=temp_folder,
                   rate_limit=rate_limit,
-                  overwrite=False,
-                  plot=False,
+                  overwrite=True,
+                  plot=True,
                   image_folder=image_folder,
                   multiprocess=mp_w,
                   encoder=encoder,
@@ -59,10 +53,10 @@ class TestFullExample(unittest.TestCase):
 
         # Distance metric
         print('Calculating distance matrix...')
+        metrics = distance_dict.keys()
         for metric in metrics:
             print(' ', metric)
             song_df = distance_matrix(fourier_folder=output_folder,
-                                      warp=warp,
                                       multiprocess=mp_d,
                                       distance_metric=metric)
 

@@ -151,12 +151,12 @@
 <span></span><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">os</span>
-
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">.transform</span> <span class="k">import</span> <span class="n">limit_by_freq</span><span class="p">,</span> <span class="n">dict_to_array</span>
-
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">combinations_with_replacement</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
 <span class="c1"># sqrt(2) with default precision np.float64</span>
 <span class="n">_SQRT2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 
@@ -210,6 +210,8 @@
 
 <span class="k">def</span> <span class="nf">warp_distance</span><span class="p">(</span><span class="n">distance_metric</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">warp</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    DEPRECATED. Calculate the minimum distance among</span>
+<span class="sd">    x and y arrays after warping.</span>
 
 <span class="sd">    :param str distance_metric:</span>
 <span class="sd">    :param np.array x:</span>
@@ -240,7 +242,6 @@
                   <span class="n">features_x</span><span class="p">,</span>
                   <span class="n">freq_y</span><span class="p">,</span>
                   <span class="n">features_y</span><span class="p">,</span>
-                  <span class="n">warp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                   <span class="n">distance_metric</span><span class="o">=</span><span class="s1">&#39;l2_norm&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Distance between song x (with frequencies and features)</span>
@@ -250,8 +251,6 @@
 <span class="sd">    :param numpy.array features_x: features (fourier amplitude) of song x.</span>
 <span class="sd">    :param numpy.array freq_y: frequencies of the song y.</span>
 <span class="sd">    :param numpy.array features_y: features (fourier amplitude) of song y.</span>
-<span class="sd">    :param warp: to calculate distance with warp between series,</span>
-<span class="sd">        warp is float. If None, warp is not applied.</span>
 <span class="sd">    :param str distance_metric: name of the metric to use. Options are:</span>
 
 <span class="sd">            - &#39;positive&#39;: positive_error.</span>
@@ -265,30 +264,22 @@
                                  <span class="n">freq_y</span><span class="p">,</span>
                                  <span class="n">features_y</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">warp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">distance</span> <span class="o">=</span> <span class="n">distance_dict</span><span class="p">[</span><span class="n">distance_metric</span><span class="p">](</span><span class="n">features_x</span><span class="p">,</span>
-                                                  <span class="n">features_y_frame</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">distance</span> <span class="o">=</span> <span class="n">warp_distance</span><span class="p">(</span><span class="n">distance_metric</span><span class="p">,</span>
-                                 <span class="n">features_x</span><span class="p">,</span>
-                                 <span class="n">features_y_frame</span><span class="p">,</span>
-                                 <span class="n">warp</span><span class="p">)</span>
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">distance_dict</span><span class="p">[</span><span class="n">distance_metric</span><span class="p">](</span><span class="n">features_x</span><span class="p">,</span>
+                                              <span class="n">features_y_frame</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">distance</span></div>
 
 
 <div class="viewcode-block" id="distance_matrix"><a class="viewcode-back" href="../../distance.html#foucluster.distance.distance_matrix">[docs]</a><span class="k">def</span> <span class="nf">distance_matrix</span><span class="p">(</span><span class="n">fourier_folder</span><span class="p">,</span>
-                    <span class="n">warp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                    <span class="n">upper_limit</span><span class="o">=</span><span class="mf">6000.0</span><span class="p">,</span>
+                    <span class="n">multiprocess</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                     <span class="n">distance_metric</span><span class="o">=</span><span class="s1">&#39;l2_norm&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A distance matrix with all the songs of a folder</span>
 <span class="sd">    can be calculated.</span>
 
 <span class="sd">    :param fourier_folder:</span>
-<span class="sd">    :param warp:</span>
-<span class="sd">    :param upper_limit:</span>
-<span class="sd">    :param distance_metric:</span>
+<span class="sd">    :param bool multiprocess:</span>
+<span class="sd">    :param str distance_metric:</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">merged_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fourier_folder</span><span class="p">,</span> <span class="s1">&#39;merged_file.json&#39;</span><span class="p">)</span>
@@ -304,34 +295,85 @@
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">song_names</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;Songs&#39;</span><span class="p">])</span>
     <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Songs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">song_names</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;Songs&#39;</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">song_names</span><span class="p">)):</span>
-        <span class="n">song_x</span> <span class="o">=</span> <span class="n">song_names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="n">freq_x</span><span class="p">,</span> <span class="n">features_x</span> <span class="o">=</span> <span class="n">dict_to_array</span><span class="p">(</span><span class="n">merged_file</span><span class="p">[</span><span class="n">song_x</span><span class="p">])</span>
-        <span class="c1"># Filtering frequencies</span>
-        <span class="n">freq_x</span><span class="p">,</span> <span class="n">features_x</span> <span class="o">=</span> <span class="n">limit_by_freq</span><span class="p">(</span><span class="n">freq_x</span><span class="p">,</span>
-                                           <span class="n">features_x</span><span class="p">,</span>
-                                           <span class="n">upper_limit</span><span class="o">=</span><span class="n">upper_limit</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">song_names</span><span class="p">)):</span>
-            <span class="n">song_y</span> <span class="o">=</span> <span class="n">song_names</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="n">i</span><span class="p">:</span>
-                <span class="n">freq_y</span><span class="p">,</span> <span class="n">features_y</span> <span class="o">=</span> <span class="n">dict_to_array</span><span class="p">(</span><span class="n">merged_file</span><span class="p">[</span><span class="n">song_y</span><span class="p">])</span>
-                <span class="n">distance</span> <span class="o">=</span> <span class="n">pair_distance</span><span class="p">(</span><span class="n">freq_x</span><span class="o">=</span><span class="n">freq_x</span><span class="p">,</span>
-                                         <span class="n">features_x</span><span class="o">=</span><span class="n">features_x</span><span class="p">,</span>
-                                         <span class="n">freq_y</span><span class="o">=</span><span class="n">freq_y</span><span class="p">,</span>
-                                         <span class="n">features_y</span><span class="o">=</span><span class="n">features_y</span><span class="p">,</span>
-                                         <span class="n">warp</span><span class="o">=</span><span class="n">warp</span><span class="p">,</span>
-                                         <span class="n">distance_metric</span><span class="o">=</span><span class="n">distance_metric</span><span class="p">)</span>
-                <span class="c1"># Save also in reverse</span>
-                <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">song_y</span><span class="p">,</span> <span class="n">song_x</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance</span>
-            <span class="k">elif</span> <span class="n">j</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
-                <span class="n">distance</span> <span class="o">=</span> <span class="mf">0.0</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">distance</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">song_x</span><span class="p">,</span> <span class="n">song_y</span><span class="p">]</span>
-            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">song_x</span><span class="p">,</span> <span class="n">song_y</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance</span>
+
+    <span class="k">if</span> <span class="n">multiprocess</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">ff_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">song_name</span> <span class="ow">in</span> <span class="n">song_names</span><span class="p">:</span>
+            <span class="n">freq</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="n">dict_to_array</span><span class="p">(</span><span class="n">merged_file</span><span class="p">[</span><span class="n">song_name</span><span class="p">])</span>
+            <span class="n">ff_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">song_name</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;freq&#39;</span><span class="p">:</span> <span class="n">freq</span><span class="p">,</span> <span class="s1">&#39;features&#39;</span><span class="p">:</span> <span class="n">features</span><span class="p">}})</span>
+
+        <span class="n">mgr</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Manager</span><span class="p">()</span>
+        <span class="n">ns</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">Namespace</span><span class="p">()</span>
+        <span class="n">ns</span><span class="o">.</span><span class="n">distance_metric</span> <span class="o">=</span> <span class="n">distance_metric</span>
+        <span class="n">ns</span><span class="o">.</span><span class="n">ff_dict</span> <span class="o">=</span> <span class="n">ff_dict</span>
+        <span class="c1"># Distances are saved in a shared dict</span>
+        <span class="n">shared_dict</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">song_name</span> <span class="ow">in</span> <span class="n">song_names</span><span class="p">:</span>
+            <span class="n">shared_dict</span><span class="p">[</span><span class="n">song_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+        <span class="n">ns</span><span class="o">.</span><span class="n">dict</span> <span class="o">=</span> <span class="n">shared_dict</span>
+
+        <span class="c1"># Args must be in list</span>
+        <span class="n">song_names_tuple</span> <span class="o">=</span> <span class="p">[</span><span class="n">comb</span> <span class="k">for</span> <span class="n">comb</span> <span class="ow">in</span> <span class="n">combinations_with_replacement</span><span class="p">(</span><span class="n">song_names</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span>
+        <span class="n">args_to_mp</span> <span class="o">=</span> <span class="p">[(</span><span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ns</span><span class="p">)</span> <span class="k">for</span> <span class="n">names</span> <span class="ow">in</span> <span class="n">song_names_tuple</span><span class="p">]</span>
+
+        <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span><span class="n">multiprocess_matrix</span><span class="p">,</span> <span class="n">args_to_mp</span><span class="p">)</span>
+
+        <span class="c1"># Retrieve the information and save into the dataframe</span>
+        <span class="k">for</span> <span class="n">k_1</span> <span class="ow">in</span> <span class="n">ns</span><span class="o">.</span><span class="n">dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">k_2</span> <span class="ow">in</span> <span class="n">ns</span><span class="o">.</span><span class="n">dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">k_1</span><span class="p">,</span> <span class="n">k_2</span><span class="p">]</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="n">k_1</span><span class="p">][</span><span class="n">k_2</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">song_names</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">song_names</span><span class="p">)):</span>
+                <span class="n">song_x</span> <span class="o">=</span> <span class="n">song_names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="n">i</span><span class="p">:</span>
+                    <span class="c1"># Song_x</span>
+                    <span class="n">freq_x</span><span class="p">,</span> <span class="n">features_x</span> <span class="o">=</span> <span class="n">dict_to_array</span><span class="p">(</span><span class="n">merged_file</span><span class="p">[</span><span class="n">song_x</span><span class="p">])</span>
+                    <span class="n">song_y</span> <span class="o">=</span> <span class="n">song_names</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                    <span class="n">freq_y</span><span class="p">,</span> <span class="n">features_y</span> <span class="o">=</span> <span class="n">dict_to_array</span><span class="p">(</span><span class="n">merged_file</span><span class="p">[</span><span class="n">song_y</span><span class="p">])</span>
+                    <span class="n">distance</span> <span class="o">=</span> <span class="n">pair_distance</span><span class="p">(</span><span class="n">freq_x</span><span class="o">=</span><span class="n">freq_x</span><span class="p">,</span>
+                                             <span class="n">features_x</span><span class="o">=</span><span class="n">features_x</span><span class="p">,</span>
+                                             <span class="n">freq_y</span><span class="o">=</span><span class="n">freq_y</span><span class="p">,</span>
+                                             <span class="n">features_y</span><span class="o">=</span><span class="n">features_y</span><span class="p">,</span>
+                                             <span class="n">distance_metric</span><span class="o">=</span><span class="n">distance_metric</span><span class="p">)</span>
+                    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">song_x</span><span class="p">,</span> <span class="n">song_y</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance</span>
+                    <span class="c1"># Save also in reverse</span>
+                    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">song_y</span><span class="p">,</span> <span class="n">song_x</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># j == i:</span>
+                    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">song_x</span><span class="p">,</span> <span class="n">song_x</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span></div>
+
+
+<span class="k">def</span> <span class="nf">multiprocess_matrix</span><span class="p">(</span><span class="n">song_x</span><span class="p">,</span> <span class="n">song_y</span><span class="p">,</span> <span class="n">ns</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    :param song_x:</span>
+<span class="sd">    :param song_y:</span>
+<span class="sd">    :param ns: Namespace.</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">song_x</span> <span class="o">==</span> <span class="n">song_y</span><span class="p">:</span>
+        <span class="n">ns</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="n">song_x</span><span class="p">][</span><span class="n">song_x</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Song_x</span>
+        <span class="n">freq_x</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">ff_dict</span><span class="p">[</span><span class="n">song_x</span><span class="p">][</span><span class="s1">&#39;freq&#39;</span><span class="p">]</span>
+        <span class="n">features_x</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">ff_dict</span><span class="p">[</span><span class="n">song_x</span><span class="p">][</span><span class="s1">&#39;features&#39;</span><span class="p">]</span>
+        <span class="c1"># Song_y</span>
+        <span class="n">freq_y</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">ff_dict</span><span class="p">[</span><span class="n">song_y</span><span class="p">][</span><span class="s1">&#39;freq&#39;</span><span class="p">]</span>
+        <span class="n">features_y</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">ff_dict</span><span class="p">[</span><span class="n">song_y</span><span class="p">][</span><span class="s1">&#39;features&#39;</span><span class="p">]</span>
+        <span class="c1"># Distance</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">pair_distance</span><span class="p">(</span><span class="n">freq_x</span><span class="o">=</span><span class="n">freq_x</span><span class="p">,</span>
+                                 <span class="n">features_x</span><span class="o">=</span><span class="n">features_x</span><span class="p">,</span>
+                                 <span class="n">freq_y</span><span class="o">=</span><span class="n">freq_y</span><span class="p">,</span>
+                                 <span class="n">features_y</span><span class="o">=</span><span class="n">features_y</span><span class="p">,</span>
+                                 <span class="n">distance_metric</span><span class="o">=</span><span class="n">ns</span><span class="o">.</span><span class="n">distance_metric</span><span class="p">)</span>
+        <span class="n">ns</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="n">song_x</span><span class="p">][</span><span class="n">song_y</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance</span>
+        <span class="c1"># Save also in reverse</span>
+        <span class="n">ns</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="n">song_y</span><span class="p">][</span><span class="n">song_x</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance</span>
 </pre></div>
 
            </div>
@@ -369,6 +411,7 @@
         <script type="text/javascript" src="../../_static/jquery.js"></script>
         <script type="text/javascript" src="../../_static/underscore.js"></script>
         <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
     
 
   
