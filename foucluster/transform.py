@@ -267,7 +267,7 @@ def all_songs(source_folder,
                  for song in os.listdir(source_folder)]
 
         # with mp.Pool(processes=max(int(mp.cpu_count() / 2.0), 1)) as p:
-        with mp.Pool(processes=max(int(mp.cpu_count() - 1), 1)) as p:
+        with mp.Pool(processes=max(int(mp.cpu_count() * 0.25), 1)) as p:
             p.starmap(time_to_frequency, songs)
     else:
         logger.debug('Fourier is applied in single core')
