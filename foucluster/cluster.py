@@ -3,6 +3,7 @@ from sklearn.preprocessing import minmax_scale
 from scipy.spatial.distance import cdist
 import pandas as pd
 import numpy as np
+from itertools import groupby
 
 eps = 10**(-10)
 
@@ -90,6 +91,17 @@ def jump_method(dist_df, n_max=50):
         distortions[k] = distortion**(- Y)
         jump_vector[k - 1] = distortions[k] - distortions[k - 1]
     n_cluster = np.argmax(jump_vector) + 1
+
+    # Avoiding let an instance alone
+    instance_alone = True
+    while instance_alone is True:
+        y = cluster.KMeans(n_clusters=n_cluster).fit_predict(dist_df)
+        group_member = [len(list(group)) for key, group in groupby(np.sort(y))]
+        if np.min(group_member) > 1 or n_cluster == 2:
+            instance_alone = False
+        else:
+            n_cluster -= 1
+
     return n_cluster
 
 
