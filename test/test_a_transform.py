@@ -3,7 +3,7 @@ import configparser
 import numpy as np
 import pandas as pd
 import unittest
-from foucluster.transform import all_songs
+from foucluster.transform import all_song
 from foucluster.distance import distance_matrix, distance_dict
 from foucluster.plot import heatmap_song
 from foucluster.cluster import \
@@ -39,8 +39,8 @@ class TestFullExample(unittest.TestCase):
         # Distance
         mp_d = True if str(config['Distance']['multiprocess']) == 'True' else False
 
-        print('Transforming MP3 songs into Fourier series...')
-        all_songs(source_folder=source_folder,
+        print('Transforming MP3 song into Fourier series...')
+        all_song(source_folder=source_folder,
                   output_folder=output_folder,
                   temp_folder=temp_folder,
                   rate_limit=rate_limit,
@@ -71,7 +71,7 @@ class TestFullExample(unittest.TestCase):
             dist_df = pd.read_csv(os.path.join(distance_folder,
                                                metric + '.csv'),
                                   sep=';')
-            dist_df = dist_df.set_index('Songs')
+            dist_df = dist_df.set_index('song')
             heatmap_song(dist_df,
                          image_name=metric,
                          image_folder=image_folder)
@@ -88,7 +88,7 @@ class TestFullExample(unittest.TestCase):
             song_df = pd.read_csv(os.path.join(distance_folder,
                                                metric + '.csv'),
                                   sep=';')
-            song_df = song_df.set_index('Songs')
+            song_df = song_df.set_index('song')
             n_genres = np.unique([i[0] for i in song_df.index]).shape[0]
             for cluster_method in n_cluster_methods:
                 cluster_df = determinist_cluster(dist_df=song_df.copy(deep=True),

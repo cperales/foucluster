@@ -212,16 +212,16 @@ def time_to_frequency(song,
             logger.error('MemoryError: %s couldn\'t be Fourier transformed', song_name)
 
 
-def all_songs(source_folder,
-              output_folder,
-              temp_folder,
-              rate_limit=6000.0,
-              overwrite=True,
-              plot=False,
-              image_folder=None,
-              multiprocess=False,
-              encoder='mpg123',
-              step=5.0):
+def transform_folder(source_folder,
+                     output_folder,
+                     temp_folder,
+                     rate_limit=6000.0,
+                     overwrite=True,
+                     plot=False,
+                     image_folder=None,
+                     multiprocess=False,
+                     encoder='mpg123',
+                     step=5.0):
     """
     Transform a directory full of MP3 files
     into WAV files, and then into Fourier series,
@@ -267,7 +267,7 @@ def all_songs(source_folder,
                  for song in os.listdir(source_folder)]
 
         # with mp.Pool(processes=max(int(mp.cpu_count() / 2.0), 1)) as p:
-        with mp.Pool(processes=max(int(mp.cpu_count() - 1), 1)) as p:
+        with mp.Pool(processes=max(int(mp.cpu_count() * 0.4), 1)) as p:
             p.starmap(time_to_frequency, songs)
     else:
         logger.debug('Fourier is applied in single core')

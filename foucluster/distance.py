@@ -142,9 +142,9 @@ def distance_matrix(fourier_folder,
 
     # Creating a squared DataFrame as matrix distance
     song_names = list(merged_file.keys())
-    df = pd.DataFrame(columns=song_names + ['Songs'], dtype=np.float64)
-    df['Songs'] = song_names
-    df = df.set_index('Songs')
+    df = pd.DataFrame(columns=song_names + ['song'], dtype=np.float64)
+    df['song'] = song_names
+    df = df.set_index('song')
 
     if multiprocess is True:
         ff_dict = {}

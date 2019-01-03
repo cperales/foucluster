@@ -27,7 +27,7 @@ class TestCluster(unittest.TestCase):
         song_df = pd.read_csv(os.path.join(distance_folder,
                                            metric + '.csv'),
                               sep=';')
-        song_df = song_df.set_index('Songs')
+        song_df = song_df.set_index('song')
         for cluster_method in cluster_methods:
             cluster_df = automatic_cluster(dist_df=song_df.copy(deep=True),
                                            method=cluster_method)
@@ -51,7 +51,7 @@ class TestCluster(unittest.TestCase):
         song_df = pd.read_csv(os.path.join(distance_folder,
                                                metric + '.csv'),
                                   sep=';')
-        song_df = song_df.set_index('Songs')
+        song_df = song_df.set_index('song')
         first_song = song_df.index[0]
         song_list = party_list(song_df)
         order = True

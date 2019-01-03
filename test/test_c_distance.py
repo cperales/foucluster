@@ -22,7 +22,7 @@ class TestDistance(unittest.TestCase):
                                   distance_metric='positive')
         distance_folder = config['Folder']['Distance']
         df = pd.read_csv(os.path.join(distance_folder, 'positive.csv'), sep=';')
-        df = df.set_index('Songs')
+        df = df.set_index('song')
         pd.testing.assert_frame_equal(song_df, df)
 
 
