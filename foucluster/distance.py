@@ -44,13 +44,14 @@ class Data:
         else:
             return copy.copy(self)
 
-    def unpack(self):
+    def to_df(self):
         """
+        Export data as a pandas.DataFrame.
 
         :return:
         """
         if self.shape > 1:
-            range_str = [str(s) for s in range(self.shape)]
+            range_str = [s for s in range(self.shape)]
             iterables = [self.columns, range_str]
             multiindex = pd.MultiIndex.from_product(iterables, names=['song', 'frame'])
             # multiindex = [i for i in itertools.product(self.columns, range_str, repeat=1)]
@@ -67,9 +68,18 @@ class Data:
 
             for c_1 in self.columns:
                 for c_2 in self.columns:
-                    df.loc[c_1, c_2] = self.max_diff(self, c_1, c_2)
+                    df.loc[c_1, c_2] = self.max_diff(c_1, c_2)
 
-        return df
+        return df.T
+
+    def to_json(self):
+        """
+        Export data as a JSON.
+
+        :return:
+        """
+        return None
+
 
     def min_diff(self, song_x, song_y):
         """
@@ -228,16 +238,16 @@ def pair_distance(freq_x,
     return distance_array
 
 
-def distance_matrix(fourier_folder,
-                    multiprocess=False,
-                    frames=None,
-                    distance_metric='l2_norm'):
+def distance_matrix(fourier_folder: str,
+                    multiprocess: bool = False,
+                    frames: int =1,
+                    distance_metric: str ='l2_norm'):
     """
     A distance matrix with all the songs of a folder
     can be calculated.
 
     :param fourier_folder:
-    :param frames:
+    :param int frames:
     :param distance_metric:
     :param bool multiprocess:
     :param str distance_metric:

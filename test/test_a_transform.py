@@ -55,30 +55,18 @@ class TestFullExample(unittest.TestCase):
         # Distance metric
         print('Calculating distance matrix...')
         metrics = distance_dict.keys()
-        song_df_dict = {}
+        song_data_dict = {}
         for metric in metrics:
             print(' ', metric)
-            song_df = distance_matrix(fourier_folder=output_folder,
-                                      multiprocess=mp_d,
-                                      frames=frames,
-                                      distance_metric=metric)
-            song_df_dict[metric] = song_df
+            song_data = distance_matrix(fourier_folder=output_folder,
+                                        multiprocess=mp_d,
+                                        frames=frames,
+                                        distance_metric=metric)
+            song_data_dict[metric] = song_data
 
-            song_df.unpack().to_csv(os.path.join(distance_folder,
+            song_data.to_df().to_csv(os.path.join(distance_folder,
                                                  metric + '.csv'),
-                                    sep=';')
-
-        # # Heat map
-        # print('Plotting heat maps...')
-        # for metric in metrics:
-        #     print(' ', metric)
-        #     dist_df = pd.read_csv(os.path.join(distance_folder,
-        #                                        metric + '.csv'),
-        #                           sep=';')
-        #     dist_df = dist_df.set_index('song')
-        #     heatmap_song(dist_df,
-        #                  image_name=metric,
-        #                  image_folder=image_folder)
+                                    sep=';', index_label=['song', 'frame'])
 
         # Clustering test
         print('Testing cluster methods...')
@@ -89,8 +77,8 @@ class TestFullExample(unittest.TestCase):
 
         for metric in metrics:
             print(' ', metric)
-            song_df = song_df_dict[metric]
-            n_genres = np.unique([i[0] for i in song_df.columns]).shape[0]
+            song_df = song_data_dict[metric]
+            n_genres = 2
             for cluster_method in n_cluster_methods:
                 cluster_df = determinist_cluster(dist_df=song_df.copy(deep=True),
                                                  method=cluster_method,

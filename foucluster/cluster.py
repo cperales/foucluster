@@ -33,10 +33,10 @@ def determinist_cluster(dist_df, method, n_clusters):
     :param int n_clusters:
     :return: pandas.DataFrame with a column with clusters.
     """
-    df_unpack = dist_df.unpack()
-    df_matrix = minmax_scale(df_unpack)
+    df_to_df = dist_df.to_df().T
+    df_matrix = minmax_scale(df_to_df)
     y = n_cluster_methods[method](n_clusters=n_clusters).fit_predict(df_matrix)
-    cluster_df = pd.DataFrame(df_matrix, index=df_unpack.index, columns=df_unpack.columns)
+    cluster_df = pd.DataFrame(df_matrix, index=df_to_df.index, columns=df_to_df.columns)
     cluster_df['Cluster'] = pd.Series(y, index=cluster_df.index)
     return cluster_df
 
@@ -55,15 +55,15 @@ def automatic_cluster(dist_df, method):
 
     :return: pandas.DataFrame with a column with clusters.
     """
-    df_unpack = dist_df.unpack()
-    df_matrix = minmax_scale(df_unpack)
+    df_to_df = dist_df.to_df().T
+    df_matrix = minmax_scale(df_to_df)
     if method in n_cluster_methods.keys():
         n_clusters = jump_method(dist_df=df_matrix)
         clf = n_cluster_methods[method](n_clusters=n_clusters)
     else:
         clf = non_n_cluster_methods[method]()
     y = clf.fit_predict(df_matrix)
-    cluster_df = pd.DataFrame(df_matrix, index=df_unpack.index, columns=df_unpack.columns)
+    cluster_df = pd.DataFrame(df_matrix, index=df_to_df.index, columns=df_to_df.columns)
     cluster_df['Cluster'] = pd.Series(y, index=cluster_df.index)
     return cluster_df
 
@@ -104,7 +104,7 @@ def score_cluster(cluster_df):
     :param pandas.DataFrame cluster_df:
     :return: accuracy score. cluster_df have now `Cluster_corrected` column.
     """
-    accurate_class = [int(n[0]) for n in cluster_df.index.tolist()]
+    accurate_class = [int(n[0][0]) for n in cluster_df.index.tolist()]
     accurate_class -= np.unique(accurate_class)[0]
     # Move to 0, 1, ... notation
     accurate_class = np.array(accurate_class, dtype=int)
