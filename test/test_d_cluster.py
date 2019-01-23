@@ -31,7 +31,7 @@ class TestCluster(unittest.TestCase):
         for cluster_method in cluster_methods:
             cluster_df = automatic_cluster(dist_df=song_df.copy(deep=True),
                                            method=cluster_method)
-            self.assertGreater(np.unique(cluster_df['Cluster'].values).shape[0], 1)
+            self.assertGreater(np.unique(cluster_df.values).shape[0], 1)
 
     def todo_party_list(self):
         """

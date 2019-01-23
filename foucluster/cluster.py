@@ -1,5 +1,5 @@
 from sklearn import cluster
-from sklearn.preprocessing import minmax_scale, scale
+# from sklearn.preprocessing import minmax_scale, scale
 from scipy.spatial.distance import cdist
 import pandas as pd
 import numpy as np
@@ -37,7 +37,7 @@ def determinist_cluster(dist_df, method, n_clusters):
     if not isinstance(dist_df, pd.DataFrame):
         dist_df = dist_df.to_df().T
     dist_values = dist_df.values
-    df_matrix = scale(dist_values)
+    df_matrix = zero_scale(dist_values)
     y = n_cluster_methods[method](n_clusters=n_clusters).fit_predict(df_matrix)
     cluster_series = pd.Series(y, index=dist_df.index)
     return cluster_series
@@ -60,7 +60,7 @@ def automatic_cluster(dist_df, method):
     if not isinstance(dist_df, pd.DataFrame):
         dist_df = dist_df.to_df().T
     dist_values = dist_df.values
-    df_matrix = scale(dist_values)
+    df_matrix = zero_scale(dist_values)
     if method in n_cluster_methods.keys():
         n_clusters = jump_method(dist_df=df_matrix)
         clf = n_cluster_methods[method](n_clusters=n_clusters)
@@ -119,10 +119,10 @@ def score_cluster(cluster_df):
     :return: accuracy score. cluster_df have now `Cluster_corrected` column.
     """
     accurate_class = [int(n[0][0]) for n in cluster_df.index.tolist()]
-    accurate_class -= np.unique(accurate_class)[0]
+    accurate_class -= np.unique(accurate_class).min()
     # Move to 0, 1, ... notation
     accurate_class = np.array(accurate_class, dtype=int)
-    cluster_class = np.array(cluster_df['Cluster'].tolist(), dtype=int)
+    cluster_class = np.array(cluster_df.values.tolist(), dtype=int)
     # Find correspondences between given classes and cluster classes
     correspondence_dict = {}
 
