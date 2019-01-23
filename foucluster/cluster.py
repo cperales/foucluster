@@ -65,6 +65,7 @@ def automatic_cluster(dist_df, method):
         clf = n_cluster_methods[method](n_clusters=n_clusters)
     else:
         clf = non_n_cluster_methods[method]()
+    print(df_matrix)
     y = clf.fit_predict(df_matrix)
     cluster_df = pd.DataFrame(df_matrix, index=dist_df.index, columns=dist_df.columns)
     cluster_df['Cluster'] = pd.Series(y, index=cluster_df.index)
