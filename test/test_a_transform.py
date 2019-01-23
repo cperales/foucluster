@@ -3,7 +3,7 @@ import configparser
 import numpy as np
 import pandas as pd
 import unittest
-from foucluster.transform import all_songs
+from foucluster.transform import transform_folder
 from foucluster.distance import distance_matrix, distance_dict
 from foucluster.plot import heatmap_song
 from foucluster.cluster import \
@@ -41,16 +41,16 @@ class TestFullExample(unittest.TestCase):
         mp_d = True if str(config['Distance']['multiprocess']) == 'True' else False
 
         print('Transforming MP3 song into Fourier series...')
-        all_songs(source_folder=source_folder,
-                  output_folder=output_folder,
-                  temp_folder=temp_folder,
-                  rate_limit=rate_limit,
-                  overwrite=False,
-                  plot=False,
-                  image_folder=image_folder,
-                  multiprocess=mp_w,
-                  encoder=encoder,
-                  step=step)
+        transform_folder(source_folder=source_folder,
+                         output_folder=output_folder,
+                         temp_folder=temp_folder,
+                         rate_limit=rate_limit,
+                         overwrite=False,
+                         plot=False,
+                         image_folder=image_folder,
+                         multiprocess=mp_w,
+                         encoder=encoder,
+                         step=step)
 
         # Distance metric
         print('Calculating distance matrix...')

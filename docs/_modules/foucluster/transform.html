@@ -362,16 +362,16 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;MemoryError: </span><span class="si">%s</span><span class="s1"> couldn</span><span class="se">\&#39;</span><span class="s1">t be Fourier transformed&#39;</span><span class="p">,</span> <span class="n">song_name</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="all_songs"><a class="viewcode-back" href="../../transform.html#foucluster.transform.all_songs">[docs]</a><span class="k">def</span> <span class="nf">all_songs</span><span class="p">(</span><span class="n">source_folder</span><span class="p">,</span>
-              <span class="n">output_folder</span><span class="p">,</span>
-              <span class="n">temp_folder</span><span class="p">,</span>
-              <span class="n">rate_limit</span><span class="o">=</span><span class="mf">6000.0</span><span class="p">,</span>
-              <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-              <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-              <span class="n">image_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-              <span class="n">multiprocess</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-              <span class="n">encoder</span><span class="o">=</span><span class="s1">&#39;mpg123&#39;</span><span class="p">,</span>
-              <span class="n">step</span><span class="o">=</span><span class="mf">5.0</span><span class="p">):</span>
+<div class="viewcode-block" id="transform_folder"><a class="viewcode-back" href="../../transform.html#foucluster.transform.transform_folder">[docs]</a><span class="k">def</span> <span class="nf">transform_folder</span><span class="p">(</span><span class="n">source_folder</span><span class="p">,</span>
+                     <span class="n">output_folder</span><span class="p">,</span>
+                     <span class="n">temp_folder</span><span class="p">,</span>
+                     <span class="n">rate_limit</span><span class="o">=</span><span class="mf">6000.0</span><span class="p">,</span>
+                     <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">image_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">multiprocess</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">encoder</span><span class="o">=</span><span class="s1">&#39;mpg123&#39;</span><span class="p">,</span>
+                     <span class="n">step</span><span class="o">=</span><span class="mf">5.0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transform a directory full of MP3 files</span>
 <span class="sd">    into WAV files, and then into Fourier series,</span>
@@ -417,7 +417,7 @@
                  <span class="k">for</span> <span class="n">song</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">source_folder</span><span class="p">)]</span>
 
         <span class="c1"># with mp.Pool(processes=max(int(mp.cpu_count() / 2.0), 1)) as p:</span>
-        <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
             <span class="n">p</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span><span class="n">time_to_frequency</span><span class="p">,</span> <span class="n">songs</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Fourier is applied in single core&#39;</span><span class="p">)</span>
