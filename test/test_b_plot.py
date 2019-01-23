@@ -1,10 +1,11 @@
 import unittest
-from foucluster.plot import song_plot, diff_plot
+from foucluster.plot import song_plot, diff_plot, heatmap_song
 import configparser
 import os
 import json
 from scipy.io.wavfile import read
 import numpy as np
+import pandas as pd
 
 
 class TestPlot(unittest.TestCase):
@@ -69,6 +70,18 @@ class TestPlot(unittest.TestCase):
         song_plot(aud_data,
                   filename=name.split('.')[0],
                   folder=image_folder)
+
+    def test_heatmap(self):
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        image_folder = config['Folder']['Image']
+        distance_folder = config['Folder']['Distance']
+        df = pd.read_csv(os.path.join(distance_folder, 'positive.csv'),
+                         sep=';',
+                         index_col=[0, 1])
+        heatmap_song(df,
+                     image_name='heatmap_positive',
+                     image_folder=image_folder)
 
 
 if __name__ == '__main__':
