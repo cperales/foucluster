@@ -34,6 +34,8 @@ def determinist_cluster(dist_df, method, n_clusters):
     :param int n_clusters:
     :return: pandas.DataFrame with a column with clusters.
     """
+    if not isinstance(dist_df, pd.DataFrame):
+        dist_df = dist_df.to_df().T
     df_matrix = minmax_scale(dist_df)
     y = n_cluster_methods[method](n_clusters=n_clusters).fit_predict(df_matrix)
     cluster_df = pd.DataFrame(df_matrix, index=dist_df.index, columns=dist_df.columns)
@@ -55,6 +57,8 @@ def automatic_cluster(dist_df, method):
 
     :return: pandas.DataFrame with a column with clusters.
     """
+    if not isinstance(dist_df, pd.DataFrame):
+        dist_df = dist_df.to_df().T
     df_matrix = minmax_scale(dist_df)
     if method in n_cluster_methods.keys():
         n_clusters = jump_method(dist_df=df_matrix)
@@ -114,7 +118,7 @@ def score_cluster(cluster_df):
     :param pandas.DataFrame cluster_df:
     :return: accuracy score. cluster_df have now `Cluster_corrected` column.
     """
-    accurate_class = [int(n[0]) for n in cluster_df.index.tolist()]
+    accurate_class = [int(n[0][0]) for n in cluster_df.index.tolist()]
     accurate_class -= np.unique(accurate_class)[0]
     # Move to 0, 1, ... notation
     accurate_class = np.array(accurate_class, dtype=int)
@@ -149,6 +153,9 @@ def party_list(song_df, song=None):
     :param str song:
     :return:
     """
-    if song is None or song not in song_df.columns:
-        song = song_df.index[0]
-    return song_df.sort_values(song)[song]
+    song_df_rev = song_df.T
+    if song is None or song not in song_df_rev.index:
+        song = song_df_rev.index[0]
+    # TODO: to implement
+    final_index = list(song_df_rev.sort_values(song, axis='columns')[song].index)
+    return final_index

@@ -37,6 +37,7 @@ class TestFullExample(unittest.TestCase):
         step = float(config['Fourier']['step'])
 
         # Distance
+        frames = int(config['Distance']['frames'])
         mp_d = True if str(config['Distance']['multiprocess']) == 'True' else False
 
         print('Transforming MP3 song into Fourier series...')
@@ -44,8 +45,8 @@ class TestFullExample(unittest.TestCase):
                          output_folder=output_folder,
                          temp_folder=temp_folder,
                          rate_limit=rate_limit,
-                         overwrite=True,
-                         plot=True,
+                         overwrite=False,
+                         plot=False,
                          image_folder=image_folder,
                          multiprocess=mp_w,
                          encoder=encoder,
@@ -54,27 +55,18 @@ class TestFullExample(unittest.TestCase):
         # Distance metric
         print('Calculating distance matrix...')
         metrics = distance_dict.keys()
+        song_data_dict = {}
         for metric in metrics:
             print(' ', metric)
-            song_df = distance_matrix(fourier_folder=output_folder,
-                                      multiprocess=mp_d,
-                                      distance_metric=metric)
+            song_data = distance_matrix(fourier_folder=output_folder,
+                                        multiprocess=mp_d,
+                                        frames=frames,
+                                        distance_metric=metric)
+            song_data_dict[metric] = song_data
 
-            song_df.to_csv(os.path.join(distance_folder,
-                                        metric + '.csv'),
-                           sep=';')
-
-        # Heat map
-        print('Plotting heat maps...')
-        for metric in metrics:
-            print(' ', metric)
-            dist_df = pd.read_csv(os.path.join(distance_folder,
-                                               metric + '.csv'),
-                                  sep=';')
-            dist_df = dist_df.set_index('song')
-            heatmap_song(dist_df,
-                         image_name=metric,
-                         image_folder=image_folder)
+            song_data.to_df().to_csv(os.path.join(distance_folder,
+                                                 metric + '.csv'),
+                                    sep=';', index_label=['song', 'frame'])
 
         # Clustering test
         print('Testing cluster methods...')
@@ -85,11 +77,8 @@ class TestFullExample(unittest.TestCase):
 
         for metric in metrics:
             print(' ', metric)
-            song_df = pd.read_csv(os.path.join(distance_folder,
-                                               metric + '.csv'),
-                                  sep=';')
-            song_df = song_df.set_index('song')
-            n_genres = np.unique([i[0] for i in song_df.index]).shape[0]
+            song_df = song_data_dict[metric]
+            n_genres = 2
             for cluster_method in n_cluster_methods:
                 cluster_df = determinist_cluster(dist_df=song_df.copy(deep=True),
                                                  method=cluster_method,

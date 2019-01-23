@@ -24,4 +24,4 @@ with the following function.
 When this last function wants to be executed for a whole folder, with or
 without multiprocessing, this can be done with the main function
 
-.. autofunction:: foucluster.transform.all_songs
+.. autofunction:: foucluster.transform.transform_folder
