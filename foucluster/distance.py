@@ -60,7 +60,7 @@ class Data:
             for c_1 in self.columns:
                 for c_2 in self.columns:
                     for s in range_str:
-                        df.loc[c_1][c_2, s] = self.dict_[c_1][c_2][int(s)]
+                        df.loc[c_1][c_2, s] = self.dict_[c_1][c_2][s]
         else:
             df = pd.DataFrame(columns=self.columns + ['song'], dtype=np.float64)
             df['song'] = self.columns
@@ -262,13 +262,14 @@ def distance_matrix(fourier_folder: str,
     [merged_file.update(d) for d in merged_file_list]
 
     # Creating a squared DataFrame as matrix distance
-    song_names = list(merged_file.keys())
+    file_names = list(merged_file.keys())
+    song_names = [song.split('.')[0] for song in list(merged_file.keys())]
     data = Data(columns=song_names, shape=frames)
 
     if multiprocess is True:
         ff_dict = {}
-        for song_name in song_names:
-            freq, features = dict_to_array(merged_file[song_name])
+        for song_name, file_name in zip(song_names, file_names):
+            freq, features = dict_to_array(merged_file[file_name])
             ff_dict.update({song_name: {'freq': freq, 'features': features}})
 
         mgr = mp.Manager()
@@ -327,7 +328,7 @@ def multiprocess_matrix(song_x, song_y, ns):
     :return:
     """
     if song_x == song_y:
-        ns.dict[song_x][song_x] = 0.0
+        ns.dict[song_x][song_x] = np.zeros(ns.frames)
     else:
         # Song_x
         freq_x = ns.ff_dict[song_x]['freq']
