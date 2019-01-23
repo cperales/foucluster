@@ -235,6 +235,8 @@ def pair_distance(freq_x,
                                                   features_y_frame)
         distance_array[frame] = distance  # / np.max(features_x_frame)
 
+    if np.isnan(distance_array).any():
+        raise ValueError('Error in distances')
     return distance_array
 
 
@@ -263,7 +265,8 @@ def distance_matrix(fourier_folder: str,
 
     # Creating a squared DataFrame as matrix distance
     file_names = list(merged_file.keys())
-    song_names = [song.split('.')[0] for song in list(merged_file.keys())]
+    # song_names = [song.split('.')[-2] for song in list(merged_file.keys())]
+    song_names = file_names
     data = Data(columns=song_names, shape=frames)
 
     if multiprocess is True:

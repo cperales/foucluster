@@ -1,5 +1,5 @@
 from sklearn import cluster
-from sklearn.preprocessing import minmax_scale
+from sklearn.preprocessing import minmax_scale, scale
 from scipy.spatial.distance import cdist
 import pandas as pd
 import numpy as np
@@ -36,11 +36,11 @@ def determinist_cluster(dist_df, method, n_clusters):
     """
     if not isinstance(dist_df, pd.DataFrame):
         dist_df = dist_df.to_df().T
-    df_matrix = minmax_scale(dist_df)
+    dist_values = dist_df.values
+    df_matrix = scale(dist_values)
     y = n_cluster_methods[method](n_clusters=n_clusters).fit_predict(df_matrix)
-    cluster_df = pd.DataFrame(df_matrix, index=dist_df.index, columns=dist_df.columns)
-    cluster_df['Cluster'] = pd.Series(y, index=cluster_df.index)
-    return cluster_df
+    cluster_series = pd.Series(y, index=dist_df.index)
+    return cluster_series
 
 
 def automatic_cluster(dist_df, method):
@@ -59,17 +59,16 @@ def automatic_cluster(dist_df, method):
     """
     if not isinstance(dist_df, pd.DataFrame):
         dist_df = dist_df.to_df().T
-    df_matrix = minmax_scale(dist_df)
+    dist_values = dist_df.values
+    df_matrix = scale(dist_values)
     if method in n_cluster_methods.keys():
         n_clusters = jump_method(dist_df=df_matrix)
         clf = n_cluster_methods[method](n_clusters=n_clusters)
     else:
         clf = non_n_cluster_methods[method]()
-    print(df_matrix)
     y = clf.fit_predict(df_matrix)
-    cluster_df = pd.DataFrame(df_matrix, index=dist_df.index, columns=dist_df.columns)
-    cluster_df['Cluster'] = pd.Series(y, index=cluster_df.index)
-    return cluster_df
+    cluster_series = pd.Series(y, index=dist_df.index)
+    return cluster_series
 
 
 def jump_method(dist_df, n_max=50):
@@ -77,7 +76,7 @@ def jump_method(dist_df, n_max=50):
     Method based on information theory to determine best
     number of clusters.
 
-    :param pandas.DataFrame dist_df:
+    :param np.array dist_df:
     :param int n_max: maximum number of clusters to test.
     :return: optimal number of clusters
     """
@@ -160,3 +159,20 @@ def party_list(song_df, song=None):
     # TODO: to implement
     final_index = list(song_df_rev.sort_values(song, axis='columns')[song].index)
     return final_index
+
+
+def zero_scale(X):
+    """
+
+    :param numpy.array X:
+    :return:
+    """
+    n, m = X.shape
+    x = np.empty_like(X)
+    for j in range(m):
+        feature_column = X[:, j]
+        max_value = feature_column.max()
+        min_value = feature_column.min()
+        feature_column = (feature_column - min_value) / (max_value - min_value)
+        x[:, j] = feature_column
+    return x
