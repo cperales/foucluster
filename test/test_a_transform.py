@@ -111,7 +111,7 @@ class TestFullExample(unittest.TestCase):
 
         msg = 'Best performance ({}) is achieved with {} metric, {} cluster method'
         print(msg.format(max_score, best_metric, best_cluster_method))
-        self.assertGreaterEqual(max_score, 0.7)
+        self.assertGreaterEqual(max_score, 0.9)
 
 
 if __name__ == '__main__':
