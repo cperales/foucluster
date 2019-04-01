@@ -7,7 +7,7 @@ setup(
                 'Transform. With this information, unsupervised machine learning'
                  ' is applied.',
     url='https://github.com/cperales/foucluster',
-    version='1.4',
+    version='2.0',
     author='Carlos Perales',
     author_email='sir.perales@gmail.com',
     keywords=['cluster', 'Fourier', 'music', 'song',
