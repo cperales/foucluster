@@ -7,10 +7,11 @@ import numpy as np
 from scipy.io.wavfile import read
 from .plot import fourier_plot, song_plot
 import logging
+from shutil import copyfile
+from collections import namedtuple
 
 
 logger = logging.getLogger('foucluster')
-logger.setLevel('DEBUG')
 
 
 def mp3_to_wav(mp3_file, wav_file, encoder='mpg123'):
@@ -143,19 +144,74 @@ def check_wav(song, source_folder, temp_folder, encoder='mpg123'):
     :return:
     """
     # Name of files
-    song_name = os.path.splitext(song)[0]
+    song_name, extension = os.path.splitext(song)
     mp3_file = os.path.join(source_folder, song)
-    wav_file = os.path.join(temp_folder, song_name + '.wav')
-    try:
-        if not os.path.isfile(wav_file):
-            mp3_to_wav(
-                mp3_file=mp3_file,
-                wav_file=wav_file,
-                encoder=encoder)
-        else:
-            pass
-    except MemoryError:
-        logger.error('MemoryError: %s MP3 couldn\'t be transformed into WAV', song_name)
+    if '.wav' != extension:
+        wav_file = os.path.join(temp_folder, song_name + '.wav')
+        try:
+            if not os.path.isfile(wav_file):
+                mp3_to_wav(
+                    mp3_file=mp3_file,
+                    wav_file=wav_file,
+                    encoder=encoder)
+            else:
+                pass
+        except MemoryError:
+            logger.error('MemoryError: %s MP3 couldn\'t be transformed into WAV', song_name)
+    else:  # Already a wav file
+        copyfile(mp3_file, os.path.join(temp_folder, song_name))
+
+
+def get_mem_info():
+    """
+    Return a dictionary with memory information.
+
+    :return:
+    """
+    MemInfoEntry = namedtuple('MemInfoEntry', ['value', 'unit'])
+    mem_info = {}
+    with open('/proc/meminfo') as file:
+        for line in file:
+            key, value, *unit = line.strip().split()
+            mem_info[key.rstrip(':')] = MemInfoEntry(value, unit)
+    return mem_info
+
+
+def get_free_gb():
+    """
+    Return the free space in Gigabits.
+
+    :return: free_gb
+    """
+    mem_info = get_mem_info()
+    free_gb = float(mem_info['MemAvailable'].value) / 10**6
+    return free_gb
+
+
+def ram_condition(min_gb=3):
+    """
+    True if it can't run, else otherwise.
+    Condition is Gb of RAM memory available.
+
+    :param float min_gb: minimum or gigabites
+        it needs free to work.
+    :return:
+    """
+    return get_free_gb() < min_gb
+
+
+def ram_prop_condition(prop=0.25):
+    """
+    True if it can't run, else otherwise.
+    Condition is a proportion of RAM memory available.
+
+    :param float prop: < 1
+    :return:
+    """
+    mem_info = get_mem_info()
+    total_mem = float(mem_info['MemTotal'].value) / 10**6
+    min_gb = prop * total_mem
+    return ram_condition(min_gb=min_gb)
 
 
 def time_to_frequency(song,
@@ -191,6 +247,11 @@ def time_to_frequency(song,
     if not os.path.isfile(json_name) or overwrite is True:
         # Fourier transformation
         try:
+            if ram_prop_condition(prop=0.1):
+                logger.error('Song %s is waiting until more memory is available', song_name)
+            while ram_prop_condition(prop=0.2):
+                pass  # It consumes cpu, but we assure it doesn't go to sleep indefinitely
+
             frequencies, fourier_series = wav_to_fourier(wav_file=wav_file,
                                                          rate_limit=rate_limit,
                                                          step=step)
@@ -254,11 +315,12 @@ def transform_folder(source_folder,
     # Check if mp3 is already transformed into wav. Right
     # now, foucluster doesn't have a direct read from mp3
     logger.info('Checking if songs are in WAV format...')
-    [check_wav(song=song,
-               source_folder=source_folder,
-               temp_folder=temp_folder,
-               encoder=encoder)
-     for song in os.listdir(source_folder)]
+    if source_folder != temp_folder:
+        [check_wav(song=song,
+                   source_folder=source_folder,
+                   temp_folder=temp_folder,
+                   encoder=encoder)
+         for song in os.listdir(source_folder)]
 
     if multiprocess is True:
         logger.debug('Fourier is applied in multiprocess')
@@ -267,7 +329,7 @@ def transform_folder(source_folder,
                  for song in os.listdir(source_folder)]
 
         # with mp.Pool(processes=max(int(mp.cpu_count() / 2.0), 1)) as p:
-        with mp.Pool(processes=max(int(mp.cpu_count() * 0.4), 1)) as p:
+        with mp.Pool(processes=mp.cpu_count(), maxtasksperchild=1) as p:
             p.starmap(time_to_frequency, songs)
     else:
         logger.debug('Fourier is applied in single core')
@@ -281,8 +343,7 @@ def transform_folder(source_folder,
                            step=step)
          for song in os.listdir(source_folder)]
 
-    read_files = glob.glob(os.path.join(output_folder, '*.json'))
-
-    with open(merged_file, 'w') as outfile:
-        file_contents = [open(f).read() for f in read_files]
-        outfile.write('[{}]'.format(','.join(file_contents)))
+    # read_files = glob.glob(os.path.join(output_folder, '*.json'))
+    # with open(merged_file, 'w') as outfile:
+    #     file_contents = [open(f).read() for f in read_files]
+    #     outfile.write('[{}]'.format(','.join(file_contents)))

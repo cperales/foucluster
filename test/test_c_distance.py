@@ -19,9 +19,9 @@ class TestDistance(unittest.TestCase):
         output_folder = config['Folder']['Output']
         frames = int(config['Distance']['frames'])
         song_data = distance_matrix(fourier_folder=output_folder,
-                                  multiprocess=False,
-                                  frames=frames,
-                                  distance_metric='positive')
+                                    multiprocess=False,
+                                    frames=frames,
+                                    distance_metric='positive')
         song_pd = song_data.to_df()
         distance_folder = config['Folder']['Distance']
         frames = config['Distance']['frames']

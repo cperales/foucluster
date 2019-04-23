@@ -56,9 +56,9 @@ class Data:
                     for s in range_str:
                         df.loc[c_1][c_2, s] = self.dict_[c_1][c_2][s]
         else:
-            df = pd.DataFrame(columns=self.columns + ['song'], dtype=np.float64)
-            df['song'] = self.columns
-            df = df.set_index('song')
+            df = pd.DataFrame(columns=self.columns + ['fname'], dtype=np.float64)
+            df['fname'] = self.columns
+            df = df.set_index('fname')
 
             for c_1 in self.columns:
                 for c_2 in self.columns:
