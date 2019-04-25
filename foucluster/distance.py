@@ -57,13 +57,13 @@ distance_dict = {'positive': positive_error,
                  'integrate': integrate}
 
 
-def warp_distance(distance_metric, x, y, warp=200):
+def warp_distance(distance_metric, features_x, y, warp=200):
     """
-    DEPRECATED. Calculate the minimum distance among
-    x and y arrays after warping.
+    Calculate the minimum distance among
+    features_x and y arrays after warping.
 
     :param str distance_metric:
-    :param np.array x:
+    :param np.array features_x:
     :param np.array y:
     :param int warp:
     :return:
@@ -71,17 +71,17 @@ def warp_distance(distance_metric, x, y, warp=200):
     # Selecting the array
     distance_func = distance_dict[distance_metric]
     # Copying the value
-    x_copy = copy.deepcopy(x)
+    features_x_copy = copy.deepcopy(features_x)
     y_copy = copy.deepcopy(y)
     # Starting the warping
-    min_diff = distance_func(x, y)
+    min_diff = distance_func(features_x, y)
     for i in range(1, int(warp)):
         # Moving forward
-        forward_diff = distance_func(x_copy[i:], y_copy[:-i])
+        forward_diff = distance_func(features_x_copy[i:], y_copy[:-i])
         if forward_diff < min_diff:
             min_diff = forward_diff
         # Moving backward
-        backward_diff = distance_func(x_copy[:-i], y_copy[i:])
+        backward_diff = distance_func(features_x_copy[:-i], y_copy[i:])
         if backward_diff < forward_diff:
             min_diff = backward_diff
     return min_diff
