@@ -22,15 +22,15 @@ class TestDistance(unittest.TestCase):
                                     multiprocess=False,
                                     frames=frames,
                                     distance_metric='positive')
-        song_pd = song_data.to_df()
+        song_df = song_data.to_df()
         distance_folder = config['Folder']['Distance']
-        frames = config['Distance']['frames']
+        frames = int(config['Distance']['frames'])
         if frames == 1:
-            df = pd.read_csv(os.path.join(distance_folder, 'positive.csv'), sep=';')
+            df = pd.read_csv(os.path.join(distance_folder, 'positive.csv'), sep=';', index_col=[0])
         else:
             df = pd.read_csv(os.path.join(distance_folder, 'positive.csv'), sep=';',
-                             index_col=[0, 1])
-        pd.testing.assert_frame_equal(song_pd, df)
+                             index_col=[0, 1]).set_index('song')
+        pd.testing.assert_frame_equal(song_df, df)
 
 
 if __name__ == '__main__':

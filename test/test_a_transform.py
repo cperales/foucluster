@@ -1,6 +1,6 @@
 import os
 import configparser
-from foucluster.distance import save_data
+from foucluster.structure import save_data
 import pandas as pd
 import unittest
 from foucluster.transform import transform_folder

@@ -55,16 +55,17 @@ class Data:
                 for c_2 in self.columns:
                     for s in range_str:
                         df.loc[c_1][c_2, s] = self.dict_[c_1][c_2][s]
+            df = df.T
         else:
-            df = pd.DataFrame(columns=self.columns + ['fname'], dtype=np.float64)
-            df['fname'] = self.columns
-            df = df.set_index('fname')
+            df = pd.DataFrame(columns=self.columns + ['song'], dtype=np.float64)
+            df['song'] = self.columns
+            df = df.set_index('song')
 
             for c_1 in self.columns:
                 for c_2 in self.columns:
                     df.loc[c_1, c_2] = self.max_diff(c_1, c_2)
 
-        return df.T
+        return df
 
     # TODO
     def to_json(self):
@@ -119,7 +120,7 @@ def save_data(data: Data, folder, name):
     if data.shape == 1:
         data.to_df().to_csv(os.path.join(folder,
                                          '.'.join([name, 'csv'])),
-                            sep=';')
+                            sep=';', index_label='song')
     else:
         data.to_df().to_csv(os.path.join(folder,
                                          '.'.join([name, 'csv'])),

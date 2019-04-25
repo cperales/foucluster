@@ -2,6 +2,7 @@ import json
 import glob
 import os
 import numpy as np
+from .structure import Data
 from .transform import dict_to_array
 from itertools import combinations_with_replacement
 import multiprocessing as mp
