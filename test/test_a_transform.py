@@ -1,6 +1,6 @@
 import os
 import configparser
-import numpy as np
+from foucluster.distance import save_data
 import pandas as pd
 import unittest
 from foucluster.transform import transform_folder
@@ -64,9 +64,7 @@ class TestFullExample(unittest.TestCase):
                                         distance_metric=metric)
             song_data_dict[metric] = song_data
 
-            song_data.to_df().to_csv(os.path.join(distance_folder,
-                                                 metric + '.csv'),
-                                    sep=';', index_label=['song', 'frame'])
+            save_data(song_data, folder=distance_folder, name=metric)
 
         # Clustering test
         print('Testing cluster methods...')

@@ -2,115 +2,12 @@ import json
 import glob
 import os
 import numpy as np
-import pandas as pd
 from .transform import dict_to_array
 from itertools import combinations_with_replacement
 import multiprocessing as mp
 import copy
 # sqrt(2) with default precision np.float64
 _SQRT2 = np.sqrt(2)
-
-
-class Data:
-    """
-    Dummy class in order to store into the dataframe.
-    """
-    def __init__(self, columns, shape):
-        self.columns = columns
-        self.index = columns
-        self.dict_ = {c_1: {c_2: [] for c_2 in columns}
-                      for c_1 in columns}
-        self.shape = shape
-
-    def loc(self, pos_x, pos_y, vector):
-        """
-
-        :param pos_x:
-        :param pos_y:
-        :param vector:
-        :return:
-        """
-        self.dict_[pos_x][pos_y] = vector
-        self.dict_[pos_y][pos_x] = self.dict_[pos_x][pos_y]
-
-    def copy(self, deep=True):
-        """
-
-        :param deep:
-        :return:
-        """
-        if deep is True:
-            return copy.deepcopy(self)
-        else:
-            return copy.copy(self)
-
-    def to_df(self):
-        """
-        Export data as a pandas.DataFrame.
-
-        :return:
-        """
-        if self.shape > 1:
-            range_str = [s for s in range(self.shape)]
-            iterables = [self.columns, range_str]
-            multiindex = pd.MultiIndex.from_product(iterables, names=['song', 'frame'])
-            # multiindex = [i for i in itertools.product(self.columns, range_str, repeat=1)]
-            df = pd.DataFrame(columns=multiindex, index=self.columns, dtype=np.float64)
-
-            for c_1 in self.columns:
-                for c_2 in self.columns:
-                    for s in range_str:
-                        df.loc[c_1][c_2, s] = self.dict_[c_1][c_2][s]
-        else:
-            df = pd.DataFrame(columns=self.columns + ['song'], dtype=np.float64)
-            df['song'] = self.columns
-            df = df.set_index('song')
-
-            for c_1 in self.columns:
-                for c_2 in self.columns:
-                    df.loc[c_1, c_2] = self.max_diff(c_1, c_2)
-
-        return df.T
-
-    def to_json(self):
-        """
-        Export data as a JSON.
-
-        :return:
-        """
-        return None
-
-
-    def min_diff(self, song_x, song_y):
-        """
-
-        :param song_x:
-        :param song_y:
-        :return:
-        """
-        array = self.dict_[song_x][song_y]
-        return np.min(array)
-
-    def max_diff(self, song_x, song_y):
-        """
-
-        :param song_x:
-        :param song_y:
-        :return:
-        """
-        array = self.dict_[song_x][song_y]
-        return np.max(array)
-
-    def pos_diff(self, song_x, song_y, pos):
-        """
-
-        :param song_x:
-        :param song_y:
-        :param pos:
-        :return:
-        """
-        array = self.dict_[song_x][song_y]
-        return array[pos]
 
 
 # DISTANCE METRICS
@@ -160,13 +57,13 @@ distance_dict = {'positive': positive_error,
                  'integrate': integrate}
 
 
-def warp_distance(distance_metric, x, y, warp=200):
+def warp_distance(distance_metric, features_x, y, warp=200):
     """
-    DEPRECATED. Calculate the minimum distance among
-    x and y arrays after warping.
+    Calculate the minimum distance among
+    features_x and y arrays after warping.
 
     :param str distance_metric:
-    :param np.array x:
+    :param np.array features_x:
     :param np.array y:
     :param int warp:
     :return:
@@ -174,17 +71,17 @@ def warp_distance(distance_metric, x, y, warp=200):
     # Selecting the array
     distance_func = distance_dict[distance_metric]
     # Copying the value
-    x_copy = copy.deepcopy(x)
+    features_x_copy = copy.deepcopy(features_x)
     y_copy = copy.deepcopy(y)
     # Starting the warping
-    min_diff = distance_func(x, y)
+    min_diff = distance_func(features_x, y)
     for i in range(1, int(warp)):
         # Moving forward
-        forward_diff = distance_func(x_copy[i:], y_copy[:-i])
+        forward_diff = distance_func(features_x_copy[i:], y_copy[:-i])
         if forward_diff < min_diff:
             min_diff = forward_diff
         # Moving backward
-        backward_diff = distance_func(x_copy[:-i], y_copy[i:])
+        backward_diff = distance_func(features_x_copy[:-i], y_copy[i:])
         if backward_diff < forward_diff:
             min_diff = backward_diff
     return min_diff
@@ -290,7 +187,7 @@ def distance_matrix(fourier_folder: str,
         song_names_tuple = [comb for comb in combinations_with_replacement(song_names, r=2)]
         args_to_mp = [(names[0], names[1], ns) for names in song_names_tuple]
 
-        with mp.Pool(processes=max(mp.cpu_count() - 1, 1)) as p:
+        with mp.Pool(processes=max(mp.cpu_count(), 1)) as p:
             p.starmap(multiprocess_matrix, args_to_mp)
 
         # Retrieve the information and save into the dataframe
@@ -317,8 +214,6 @@ def distance_matrix(fourier_folder: str,
                     data.loc(song_y, song_x, distance)
                 else:
                     data.loc(song_x, song_x, np.zeros(frames))
-    # df = data.unpack()
-    # return df
     return data
 
 
